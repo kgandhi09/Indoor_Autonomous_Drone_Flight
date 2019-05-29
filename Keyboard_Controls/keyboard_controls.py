@@ -50,7 +50,17 @@ vehicle.channels.overrides[1] = 1500  # roll
 amt = 100
 amt_2 = 5
 m = 0
-                
+
+def print_fn_1(num):
+    print("\nThrottle = " + str(num) + "% - " + str(vehicle.channels.overrides[3]))
+    print("Pitch value - " + str(vehicle.channels.overrides[1]))
+    print('Roll value - '+ str(vehicle.channels.overrides[2]))
+
+def print_fn_2():
+    print("Throttle - " + str(vehicle.channels.overrides[3]))
+    print('Pitch value - ' + str(vehicle.channels.overrides[1]))
+    print('Roll value - ' + str(vehicle.channels.overrides[2]))
+
 def key_press(event):
     if m == 0:
         if event.char == event.keysym: # ----------- standard-keys
@@ -59,107 +69,78 @@ def key_press(event):
                 vehicle.channels.overrides[2] = 1000  # pitch
                 vehicle.channels.overrides[1] = 1000  # roll
                 print("kill")
-                print("\nThrottle value - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print("\nThrottle value - " + str(vehicle.channels.overrides[3]))
+                print('Pitch value - ' + str(vehicle.channels.overrides[1]))
+                print('Roll value - ' +   str(vehicle.channels.overrides[2]))
                 
 
             elif event.keysym == '1':
                 vehicle.channels.overrides[3] = 1100
-                print("\nThrottle = 10% - ", int(vehicle.channels.overrides[3]))
-                print("Pitch value - ", int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(10)
                 
 
             elif event.keysym == '2':
                 vehicle.channels.overrides[3] = 1200
-                print("\nThrottle = 20% - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(20)
                 
 
             elif event.keysym == '3':  
                 vehicle.channels.overrides[3] = 1300
-                print("\nThrottle = 30% - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(30)
 
             elif event.keysym == '4':
                 vehicle.channels.overrides[3] = 1400
-                print("\nThrottle = 40% - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(40)
 
             elif event.keysym == '5':
                 vehicle.channels.overrides[3] = 1500
-                print("\nThrottle = 50% - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(50)
 
             elif event.keysym == '6':
                 vehicle.channels.overrides[3] = 1600
-                print("\nThrottle = 60% - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(60)
 
             elif event.keysym == '7':
                 vehicle.channels.overrides[3] = 1700
-                print("\nThrottle = 70% - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(70)
 
             elif event.keysym == '8':
                 vehicle.channels.overrides[3] = 1800
-                print("\nThrottle = 80% - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(80)
 
             elif event.keysym == '9':
-                vehicle.channels.overrides[3] = 1900
-                print("\nThrottle = 90% - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(90)
 
             elif event.keysym == '0':
                 vehicle.channels.overrides[3] = 2000
-                print("\nThrottle = 100% - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_1(100)
 
         else :
             if event.keysym == 'Up' :
                 vehicle.channels.overrides[2] -= amt_2
                 print("\nForward")
-                print("Throttle - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_2()
                 global m
                 m = 1
             
             elif event.keysym == 'Down' :
                 vehicle.channels.overrides[2] += amt_2 
                 print("\nBackward")
-                print("Throttle - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_2()
                 global m
                 m = 1
             
             elif event.keysym == 'Left' :
                 vehicle.channels.overrides[1] -= amt_2 
                 print("\Left")
-                print("Throttle - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_2()
                 global m
                 m = 1
                 
             elif event.keysym == 'Right' :
                 vehicle.channels.overrides[1] += amt_2 
                 print("\nRight")
-                print("Throttle - ", int(vehicle.channels.overrides[3]))
-                print('Pitch value - ', int(vehicle.channels.overrides[1]))
-                print('Roll value - ',  int(vehicle.channels.overrides[2]))
+                print_fn_2()
                 global m
                 m = 1
 
@@ -186,9 +167,9 @@ def key_down(event):
     if m == 1:
         vehicle.channels.overrides[1] = 1500
         vehicle.channels.overrides[2] = 1500
-        print('\nThrottle value - ', int(vehicle.channels.overrides[3]))
-        print('Pitch value - ', int(vehicle.channels.overrides[1]))
-        print('Roll value - ',  int(vehicle.channels.overrides[2]))
+        print('\nThrottle value - ' + str(vehicle.channels.overrides[3]))
+        print('Pitch value - ' + str(vehicle.channels.overrides[1]))
+        print('Roll value - ' +  str(vehicle.channels.overrides[2]))
         global m
         m = 0
 
