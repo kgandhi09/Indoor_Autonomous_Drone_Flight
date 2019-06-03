@@ -42,13 +42,13 @@ vehicle = connect(connection_string, baud=921600,  wait_ready=True)
 vehicle.armed = True
 time.sleep(0.5)
 
-vehicle.channels.overrides[3] = 1200  # Throttle
-vehicle.channels.overrides[2] = 1500  # pitch
-vehicle.channels.overrides[1] = 1500  # roll
+vehicle.channels.overrides[3] = 1040  # Throttle
+vehicle.channels.overrides[2] = 1499  # pitch
+vehicle.channels.overrides[1] = 1502  # roll
 
 
-amt = 100
-amt_2 = 5
+amt = 10
+amt_2 = 30
 m = 0
 
 def print_fn_1(num):
@@ -66,54 +66,21 @@ def key_press(event):
         if event.char == event.keysym: # ----------- standard-keys
             if event.keysym == 'k':
                 vehicle.channels.overrides[3] = 1000
-                vehicle.channels.overrides[2] = 1000  # pitch
-                vehicle.channels.overrides[1] = 1000  # roll
+                vehicle.channels.overrides[2] = 1499  # pitch
+                vehicle.channels.overrides[1] = 1500  # roll
                 print("kill")
                 print("\nThrottle value - " + str(vehicle.channels.overrides[3]))
                 print('Pitch value - ' + str(vehicle.channels.overrides[1]))
                 print('Roll value - ' +   str(vehicle.channels.overrides[2]))
-                
 
-            elif event.keysym == '1':
-                vehicle.channels.overrides[3] = 1100
-                print_fn_1(10)
-                
+            elif event.keysym == 'w' and vehicle.channels.overrides[3] < 1500:
+                vehicle.channels.overrides[3] += amt
+                print_fn_2()
 
-            elif event.keysym == '2':
-                vehicle.channels.overrides[3] = 1200
-                print_fn_1(20)
-                
+            elif event.keysym == 's' and vehicle.channels.overrides[3] > 1040:
+                vehicle.channels.overrides[3] -= amt
+                print_fn_2()
 
-            elif event.keysym == '3':  
-                vehicle.channels.overrides[3] = 1300
-                print_fn_1(30)
-
-            elif event.keysym == '4':
-                vehicle.channels.overrides[3] = 1400
-                print_fn_1(40)
-
-            elif event.keysym == '5':
-                vehicle.channels.overrides[3] = 1500
-                print_fn_1(50)
-
-            elif event.keysym == '6':
-                vehicle.channels.overrides[3] = 1600
-                print_fn_1(60)
-
-            elif event.keysym == '7':
-                vehicle.channels.overrides[3] = 1700
-                print_fn_1(70)
-
-            elif event.keysym == '8':
-                vehicle.channels.overrides[3] = 1800
-                print_fn_1(80)
-
-            elif event.keysym == '9':
-                print_fn_1(90)
-
-            elif event.keysym == '0':
-                vehicle.channels.overrides[3] = 2000
-                print_fn_1(100)
 
         else :
             if event.keysym == 'Up' :
@@ -165,8 +132,8 @@ def key_press(event):
 
 def key_down(event):
     if m == 1:
-        vehicle.channels.overrides[1] = 1500
-        vehicle.channels.overrides[2] = 1500
+        vehicle.channels.overrides[1] = 1499
+        vehicle.channels.overrides[2] = 1502
         print('\nThrottle value - ' + str(vehicle.channels.overrides[3]))
         print('Pitch value - ' + str(vehicle.channels.overrides[1]))
         print('Roll value - ' +  str(vehicle.channels.overrides[2]))

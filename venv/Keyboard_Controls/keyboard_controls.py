@@ -42,13 +42,13 @@ vehicle = connect(connection_string, baud=921600,  wait_ready=True)
 vehicle.armed = True
 time.sleep(0.5)
 
-vehicle.channels.overrides[3] = 1200  # Throttle
-vehicle.channels.overrides[2] = 1500  # pitch
-vehicle.channels.overrides[1] = 1500  # roll
+vehicle.channels.overrides[3] = 1040  # Throttle
+vehicle.channels.overrides[2] = 1499  # pitch
+vehicle.channels.overrides[1] = 1502  # roll
 
 
 amt = 100
-amt_2 = 5
+amt_2 = 30
 m = 0
 
 def print_fn_1(num):
@@ -65,9 +65,9 @@ def key_press(event):
     if m == 0:
         if event.char == event.keysym: # ----------- standard-keys
             if event.keysym == 'k':
-                vehicle.channels.overrides[3] = 1000
-                vehicle.channels.overrides[2] = 1000  # pitch
-                vehicle.channels.overrides[1] = 1000  # roll
+                vehicle.channels.overrides[3] = 1040
+                vehicle.channels.overrides[2] = 1499  # pitch
+                vehicle.channels.overrides[1] = 1502  # roll
                 print("kill")
                 print("\nThrottle value - " + str(vehicle.channels.overrides[3]))
                 print('Pitch value - ' + str(vehicle.channels.overrides[1]))
@@ -165,8 +165,8 @@ def key_press(event):
 
 def key_down(event):
     if m == 1:
-        vehicle.channels.overrides[1] = 1500
-        vehicle.channels.overrides[2] = 1500
+        vehicle.channels.overrides[1] = 1499
+        vehicle.channels.overrides[2] = 1502
         print('\nThrottle value - ' + str(vehicle.channels.overrides[3]))
         print('Pitch value - ' + str(vehicle.channels.overrides[1]))
         print('Roll value - ' +  str(vehicle.channels.overrides[2]))
