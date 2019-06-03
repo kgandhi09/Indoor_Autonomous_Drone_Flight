@@ -132,7 +132,7 @@ def key_press(event):
             
             elif event.keysym == 'Left' :
                 vehicle.channels.overrides[1] -= amt_2 
-                print("\Left")
+                print("\nLeft")
                 print_fn_2()
                 global m
                 m = 1
