@@ -47,13 +47,13 @@ def key_press(event):
                 print('Pitch value - ' + str(const_1))
                 print('Roll value - ' + str(const_2))
 
-            elif event.keysym == 'w':
+            elif event.keysym == 'w' and const_3 < 2000:
                 const_3 += amt
                 print_fn_2()
 
 
 
-            elif event.keysym == 's':
+            elif event.keysym == 's' and const_3 > 1040:
                 const_3 -= amt
                 print_fn_2()
 
