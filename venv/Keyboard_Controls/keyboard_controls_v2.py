@@ -132,8 +132,8 @@ def key_press(event):
 
 def key_down(event):
     if m == 1:
-        vehicle.channels.overrides[1] = 1499
-        vehicle.channels.overrides[2] = 1502
+        vehicle.channels.overrides[2] = 1499
+        vehicle.channels.overrides[1] = 1502
         print('\nThrottle value - ' + str(vehicle.channels.overrides[3]))
         print('Pitch value - ' + str(vehicle.channels.overrides[1]))
         print('Roll value - ' +  str(vehicle.channels.overrides[2]))

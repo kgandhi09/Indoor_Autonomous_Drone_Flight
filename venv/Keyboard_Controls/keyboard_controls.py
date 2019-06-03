@@ -65,7 +65,7 @@ def key_press(event):
     if m == 0:
         if event.char == event.keysym: # ----------- standard-keys
             if event.keysym == 'k':
-                vehicle.channels.overrides[3] = 1040
+                vehicle.channels.overrides[3] = 1000
                 vehicle.channels.overrides[2] = 1499  # pitch
                 vehicle.channels.overrides[1] = 1502  # roll
                 print("kill")
@@ -75,45 +75,46 @@ def key_press(event):
                 
 
             elif event.keysym == '1':
-                vehicle.channels.overrides[3] = 1100
-                print_fn_1(10)
+                vehicle.channels.overrides[3] = 1040
+                print_fn_1(4)
                 
 
             elif event.keysym == '2':
-                vehicle.channels.overrides[3] = 1200
-                print_fn_1(20)
+                vehicle.channels.overrides[3] = 1045
+                print_fn_1(4.5)
                 
 
             elif event.keysym == '3':  
-                vehicle.channels.overrides[3] = 1300
-                print_fn_1(30)
+                vehicle.channels.overrides[3] = 1050
+                print_fn_1(5)
 
             elif event.keysym == '4':
-                vehicle.channels.overrides[3] = 1400
-                print_fn_1(40)
+                vehicle.channels.overrides[3] = 1070
+                print_fn_1(7)
 
             elif event.keysym == '5':
-                vehicle.channels.overrides[3] = 1500
-                print_fn_1(50)
+                vehicle.channels.overrides[3] = 1090
+                print_fn_1(9)
 
             elif event.keysym == '6':
-                vehicle.channels.overrides[3] = 1600
-                print_fn_1(60)
+                vehicle.channels.overrides[3] = 1100
+                print_fn_1(10)
 
             elif event.keysym == '7':
-                vehicle.channels.overrides[3] = 1700
-                print_fn_1(70)
+                vehicle.channels.overrides[3] = 1120
+                print_fn_1(12)
 
             elif event.keysym == '8':
-                vehicle.channels.overrides[3] = 1800
-                print_fn_1(80)
+                vehicle.channels.overrides[3] = 1140
+                print_fn_1(14)
 
             elif event.keysym == '9':
-                print_fn_1(90)
+                vehicle.channels.overrides[3] = 1160
+                print_fn_1(16)
 
             elif event.keysym == '0':
-                vehicle.channels.overrides[3] = 2000
-                print_fn_1(100)
+                vehicle.channels.overrides[3] = 1180
+                print_fn_1(18)
 
         else :
             if event.keysym == 'Up' :
