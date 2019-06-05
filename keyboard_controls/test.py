@@ -1,4 +1,4 @@
-from pynput import Key, Controller, Listener
+from pynput.keyboard import Key, Controller, Listener
 keyboard = Controller()
 
 keyboard.press(Key.space)
