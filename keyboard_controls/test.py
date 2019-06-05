@@ -16,5 +16,22 @@ with keyboard.pressed(Key.shift):
     keyboard.press('a')
     keyboard.release('a')
 
-# Type 'Hello World' using the shortcut type method
+#AAHello World Type 'Hello World' using the shortcut type method
 keyboard.type('Hello World')
+
+def on_press(key):
+    print('{0} pressed'.format(
+        key))
+
+def on_release(key):
+    print('{0} release'.format(
+        key))
+    if key == Key.esc:
+        # Stop listener
+        return False
+
+# Collect events until released
+with Listener(
+        on_press=on_press,
+        on_release=on_release) as listener:
+    listener.join()
