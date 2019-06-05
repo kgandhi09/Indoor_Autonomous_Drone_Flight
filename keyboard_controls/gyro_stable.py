@@ -1,5 +1,7 @@
 import smbus # import SMBus module of I2C from time import sleep # import
 from time import sleep
+import math
+
 
 # some MPU6050 Registers and their Address
 PWR_MGMT_1 = 0x6B
@@ -45,6 +47,16 @@ def read_raw_data(addr):
         value = value - 65536
     return value
 
+def dist(x,y):
+   return math.sqrt((x*x) + (y*y))
+
+def get_x_rotation(x,y,z):
+   radians = math.atan2(x, dist(y,z))
+   return -math.degrees(radians)
+
+def get_y_rotation(x,y,z):
+   radians = math.atan2(y, dist(x,z))
+   return -math.degrees(radians)
 
 bus = smbus.SMBus(1)  # or bus = smbus.SMBus(0) for older version boards
 Device_Address = 0x68  # MPU6050 device address
@@ -77,8 +89,10 @@ while True:
      #   	"\tAx=%.2f g" % Ax, "\tAy=%.2f g" % Ay, "\tAz=%.2f g" % Az)
 
     print('\n')
-    print('Gyro_X=' + str(gyro_x), 'Gyro_Y=' + str(gyro_y), 'Gyro_Z=' + str(gyro_z) )
-    print('Gx=%.2f' % Gx, 'Gy=%.2f' % Gy, 'Gz=%.2f' % Gz)
-    print('Acc_X=' + str(acc_x), 'Acc_Y=' + str(acc_y), 'Acc_Z=' + str(acc_z))
-    print('Ax=%.2f' % Ax, 'Ay=%.2f' % Ay, 'Az=%.2f' % Az)
+    print("X Rotation = %.2f" % get_x_rotation(Ax, Ay, Az))
+    print("Y Rotation = %.2f" % get_y_rotation(Ax, Ay, Az))
+   # print('Gyro_X=' + str(gyro_x), 'Gyro_Y=' + str(gyro_y), 'Gyro_Z=' + str(gyro_z) )
+   # print('Gx=%.2f' % Gx, 'Gy=%.2f' % Gy, 'Gz=%.2f' % Gz)
+   # print('Acc_X=' + str(acc_x), 'Acc_Y=' + str(acc_y), 'Acc_Z=' + str(acc_z))
+   # print('Ax=%.2f' % Ax, 'Ay=%.2f' % Ay, 'Az=%.2f' % Az)
     sleep(2)

@@ -1,5 +1,6 @@
 # --- writing of the header data for the text output file
 def writeheader(dirpath):
+    dirpath = "/Desktop/Indoor_Autonomous_Drone_Flight"
     gyrodata = open(dirpath + "/gyro_out.txt", "w")
     gyrodata.write(str("Time"))
     gyrodata.write(str('\t'))
@@ -134,10 +135,10 @@ def writedata(dirpath, counter):
 
     # print "accel_xout: ", accel_xout, " scaled: ", accel_xout_scaled
     # print "accel_yout: ", accel_yout, " scaled: ", accel_yout_scaled
-    # print "accel_zout: ", accel_zout, " scaled: ", accel_zout_scaled
+    # print "accel_zout: ", accel_zout, " scaled: ", accel_z                                     out_scaled
 
-    # print "x rotation: " , get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
-    # print "y rotation: " , get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
+    print "x rotation: " , get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
+    print "y rotation: " , get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
 
     x_rot = get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
     y_rot = get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
@@ -180,5 +181,4 @@ def writedata(dirpath, counter):
 
     gyrodata.write(str('\n'))
 
-
-gyrodata.close()
+    gyrodata.close()
