@@ -1,9 +1,5 @@
-'''
-        Read Gyro and Accelerometer by Interfacing Raspberry Pi with MPU6050 using Python
-	http://www.electronicwings.com
-'''
-import smbus  # import SMBus module of I2C
-from time import sleep  # import
+import smbus # import SMBus module of I2C from time import sleep # import
+from time import sleep
 
 # some MPU6050 Registers and their Address
 PWR_MGMT_1 = 0x6B
@@ -77,6 +73,12 @@ while True:
     Gy = gyro_y / 131.0
     Gz = gyro_z / 131.0
 
-    print ("Gx=%.2f" % Gx, u'\u00b0' + "/s", "\tGy=%.2f" % Gy, u'\u00b0' + "/s", "\tGz=%.2f" % Gz, u'\u00b0' + "/s",
-           "\tAx=%.2f g" % Ax, "\tAy=%.2f g" % Ay, "\tAz=%.2f g" % Az)
-    sleep(1)
+    #print ("Gx=%.2f" % Gx, '\u00b0' + "/s", "\tGy=%.2f" % Gy, '\u00b0' + "/s", "\tGz=%.2f" % Gz, '\u00b0' + "/s",
+     #   	"\tAx=%.2f g" % Ax, "\tAy=%.2f g" % Ay, "\tAz=%.2f g" % Az)
+
+    print('\n')
+    print('Gyro_X=' + str(gyro_x), 'Gyro_Y=' + str(gyro_y), 'Gyro_Z=' + str(gyro_z) )
+    print('Gx=%.2f' % Gx, 'Gy=%.2f' % Gy, 'Gz=%.2f' % Gz)
+    print('Acc_X=' + str(acc_x), 'Acc_Y=' + str(acc_y), 'Acc_Z=' + str(acc_z))
+    print('Ax=%.2f' % Ax, 'Ay=%.2f' % Ay, 'Az=%.2f' % Az)
+    sleep(2)
