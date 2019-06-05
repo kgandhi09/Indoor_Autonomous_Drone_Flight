@@ -5,9 +5,22 @@ from pymavlink import mavutil
 import sys, os
 from optparse import OptionParser
 import Tkinter as tk
+import math
+import smbus
 import argparse
 
-
+# some MPU6050 Registers and their Address
+PWR_MGMT_1 = 0x6B
+SMPLRT_DIV = 0x19
+CONFIG = 0x1A
+GYRO_CONFIG = 0x1B
+INT_ENABLE = 0x38
+ACCEL_XOUT_H = 0x3B
+ACCEL_YOUT_H = 0x3D
+ ACCEL_ZOUT_H = 0x3F
+GYRO_XOUT_H = 0x43
+GYRO_YOUT_H = 0x45
+GYRO_ZOUT_H = 0x47
 
 parser = argparse.ArgumentParser(
     description='Example showing how to set and clear vehicle channel-override information.')
@@ -47,9 +60,63 @@ vehicle.channels.overrides[2] = 1499  # pitch
 vehicle.channels.overrides[1] = 1502  # roll
 
 
-amt = 100
+amt = 10
 amt_2 = 30
 m = 0
+
+def MPU_Init():
+    bus.write_byte_data(Device_Address, SMPLRT_DIV, 7)
+    bus.write_byte_data(Device_Address, PWR_MGMT_1, 1)
+    bus.write_byte_data(Device_Address, CONFIG, 0)
+    bus.write_byte_data(Device_Adress, GYRO_CONFIG, 24)
+    bus.write_byte_data(Device_Adress, INT_ENABLE, 1)
+
+def read_raw_data(addr):
+    high = bus.write_byte_data(Device_Address, addr)
+    low = bus.write_byte_data(Device_Adress, addr + 1)
+
+    value = ((high << 8) | low)
+
+    if (value > 32768):
+	value -= 65536
+
+    return value
+
+def dist(x,y):
+    return math.sqrt((x*x) + (y*y))
+
+def get_x_rotation(x,y,z):
+    radians = math.atan2(x, dist(y,z))
+    return math.degrees(radians)
+
+def get_y_rotation(x,y,z):
+    radians = math.atan2(y, dist(x,z))
+    return math.degrees(radians)
+
+
+bus = smbus.SMBus(1)
+Device_Address = 0x68
+
+MPU_Init()
+
+print("Reading GYroscope and Accelerometer Data")
+
+while True:
+    acc_x = read_raw_data(ACCEL_XOUT_H)
+    acc_y = read_raw_data(ACCEL_YOUT_H)
+    acc_z = read_raw_data(ACCEL_ZOUT_H)
+
+    gyro_x = read_raw_data(GYRO_XOUT_H)
+    gyro_y = read_raw_data(GYRO_YOUT_H)
+    gyro_z = read_raw_data(GYRO_ZOUT_H)
+
+    Ax = acc_x/16834.0
+    Ay = acc_y/16834.0
+    Az = acc_z/16834.0
+
+    Gx = gyro_x/131.0
+    Gy = gyro_y/131.0
+    Gz = gyro_z/131.0	
 
 def print_fn_1(num):
     print("\nThrottle = " + str(num) + "% - " + str(vehicle.channels.overrides[3]))
@@ -67,54 +134,19 @@ def key_press(event):
             if event.keysym == 'k':
                 vehicle.channels.overrides[3] = 1000
                 vehicle.channels.overrides[2] = 1499  # pitch
-                vehicle.channels.overrides[1] = 1502  # roll
+                vehicle.channels.overrides[1] = 1500  # roll
                 print("kill")
                 print("\nThrottle value - " + str(vehicle.channels.overrides[3]))
                 print('Pitch value - ' + str(vehicle.channels.overrides[1]))
                 print('Roll value - ' +   str(vehicle.channels.overrides[2]))
-                
+            elif event.keysym == 'w' and vehicle.channels.overrides[3] < 1500:
+                vehicle.channels.overrides[3] += amt
+                print_fn_2()
 
-            elif event.keysym == '1':
-                vehicle.channels.overrides[3] = 1040
-                print_fn_1(4)
-                
+            elif event.keysym == 's' and vehicle.channels.overrides[3] > 1040:
+                vehicle.channels.overrides[3] -= amt
+                print_fn_2()
 
-            elif event.keysym == '2':
-                vehicle.channels.overrides[3] = 1045
-                print_fn_1(4.5)
-                
-
-            elif event.keysym == '3':  
-                vehicle.channels.overrides[3] = 1050
-                print_fn_1(5)
-
-            elif event.keysym == '4':
-                vehicle.channels.overrides[3] = 1070
-                print_fn_1(7)
-
-            elif event.keysym == '5':
-                vehicle.channels.overrides[3] = 1090
-                print_fn_1(9)
-
-            elif event.keysym == '6':
-                vehicle.channels.overrides[3] = 1100
-                print_fn_1(10)
-
-            elif event.keysym == '7':
-                vehicle.channels.overrides[3] = 1120
-                print_fn_1(12)
-
-            elif event.keysym == '8':
-                vehicle.channels.overrides[3] = 1140
-                print_fn_1(14)
-
-            elif event.keysym == '9':
-                vehicle.channels.overrides[3] = 1160
-                print_fn_1(16)
-
-            elif event.keysym == '0':
-                vehicle.channels.overrides[3] = 1180
-                print_fn_1(18)
 
         else :
             if event.keysym == 'Up' :
@@ -166,8 +198,8 @@ def key_press(event):
 
 def key_down(event):
     if m == 1:
-        vehicle.channels.overrides[1] = 1499
-        vehicle.channels.overrides[2] = 1502
+        vehicle.channels.overrides[2] = 1499
+        vehicle.channels.overrides[1] = 1502
         print('\nThrottle value - ' + str(vehicle.channels.overrides[3]))
         print('Pitch value - ' + str(vehicle.channels.overrides[1]))
         print('Roll value - ' +  str(vehicle.channels.overrides[2]))
