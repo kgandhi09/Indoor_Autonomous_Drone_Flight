@@ -17,7 +17,7 @@ GYRO_CONFIG = 0x1B
 INT_ENABLE = 0x38
 ACCEL_XOUT_H = 0x3B
 ACCEL_YOUT_H = 0x3D
- ACCEL_ZOUT_H = 0x3F
+ACCEL_ZOUT_H = 0x3F
 GYRO_XOUT_H = 0x43
 GYRO_YOUT_H = 0x45
 GYRO_ZOUT_H = 0x47
@@ -52,28 +52,16 @@ if not connection_string:
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, baud=921600,  wait_ready=True)
 
-vehicle.armed = True
-time.sleep(0.5)
-
-vehicle.channels.overrides[3] = 1040  # Throttle
-vehicle.channels.overrides[2] = 1499  # pitch
-vehicle.channels.overrides[1] = 1502  # roll
-
-
-amt = 10
-amt_2 = 30
-m = 0
-
 def MPU_Init():
     bus.write_byte_data(Device_Address, SMPLRT_DIV, 7)
     bus.write_byte_data(Device_Address, PWR_MGMT_1, 1)
     bus.write_byte_data(Device_Address, CONFIG, 0)
-    bus.write_byte_data(Device_Adress, GYRO_CONFIG, 24)
-    bus.write_byte_data(Device_Adress, INT_ENABLE, 1)
+    bus.write_byte_data(Device_Address, GYRO_CONFIG, 24)
+    bus.write_byte_data(Device_Address, INT_ENABLE, 1)
 
 def read_raw_data(addr):
-    high = bus.write_byte_data(Device_Address, addr)
-    low = bus.write_byte_data(Device_Adress, addr + 1)
+    high = bus.read_byte_data(Device_Address, addr)
+    low = bus.read_byte_data(Device_Address, addr + 1)
 
     value = ((high << 8) | low)
 
@@ -101,7 +89,7 @@ MPU_Init()
 
 print("Reading GYroscope and Accelerometer Data")
 
-while True:
+def assign_values():
     acc_x = read_raw_data(ACCEL_XOUT_H)
     acc_y = read_raw_data(ACCEL_YOUT_H)
     acc_z = read_raw_data(ACCEL_ZOUT_H)
@@ -116,7 +104,22 @@ while True:
 
     Gx = gyro_x/131.0
     Gy = gyro_y/131.0
-    Gz = gyro_z/131.0	
+    Gz = gyro_z/131.0
+
+    print('\n')
+    print("X Rotation = %.2f" % get_x_rotation(Ax, Ay, Az))
+    print("Y Rotation = %.2f" % get_y_rotation(Ax, Ay, Az))
+
+vehicle.armed = True
+time.sleep(0.5)
+
+vehicle.channels.overrides[3] = 1040  # --- Throttle
+vehicle.channels.overrides[2] = 1499  # --- Pitch
+vehicle.channels.overrides[1] = 1502  # --- Roll
+
+amt = 40
+amt_2 = 30
+m = 0
 
 def print_fn_1(num):
     print("\nThrottle = " + str(num) + "% - " + str(vehicle.channels.overrides[3]))
@@ -148,7 +151,7 @@ def key_press(event):
                 print_fn_2()
 
 
-        else :
+        else :                        # ----------- non-standard keys
             if event.keysym == 'Up' :
                 vehicle.channels.overrides[2] -= amt_2
                 print("\nForward")
