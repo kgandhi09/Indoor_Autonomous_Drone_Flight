@@ -1,7 +1,12 @@
-import smbus # import SMBus module of I2C from time import sleep # import
-from time import sleep
+from __future__ import print_function
+import smbus
+import time 
 import math
-
+from dronekit import connect, VehicleMode
+from pymavlink import mavutil
+import sys, os
+from optparse import OptionParser
+import argparse
 
 # some MPU6050 Registers and their Address
 PWR_MGMT_1 = 0x6B
@@ -16,32 +21,50 @@ GYRO_XOUT_H = 0x43
 GYRO_YOUT_H = 0x45
 GYRO_ZOUT_H = 0x47
 
+parser = argparse.ArgumentParser(
+    description='Example showing how to set and clear vehicle channel-override information.')
+parser.add_argument('--connect',
+                    help="vehicle connection target string. If not specified, SITL automatically started and used.")
+                    
+parser.add_argument('--baudrate', 
+                    help="Specify the baudrate of controller's serial port used for companion aircraft.")
+                    
+parser.add_argument('--aircraft', 
+                    help="Specify the location to save the logs.")
+                    
+args = parser.parse_args()
+
+    
+
+connection_string = args.connect
+
+print('Connecting to vehicle on: %s' % connection_string)
+vehicle = connect(connection_string, baud=921600,  wait_ready=True)
+
+vehicle.armed = True
+time.sleep(0.5)
+
+vehicle.channels.overrides[3] = 1100  #------ Throttle
+vehicle.channels.overrides[2] = 1499  #------ Pitch
+vehicle.channels.overrides[1] = 1502  #------ Roll
+
+amt = 50
+amt_2 = 30
+m = 0
 
 def MPU_Init():
-    # write to sample rate register
     bus.write_byte_data(Device_Address, SMPLRT_DIV, 7)
-
-    # Write to power management register
     bus.write_byte_data(Device_Address, PWR_MGMT_1, 1)
-
-    # Write to Configuration register
     bus.write_byte_data(Device_Address, CONFIG, 0)
-
-    # Write to Gyro configuration register
     bus.write_byte_data(Device_Address, GYRO_CONFIG, 24)
-
-    # Write to interrupt enable register
     bus.write_byte_data(Device_Address, INT_ENABLE, 1)
 
-
 def read_raw_data(addr):
-    # Accelero and Gyro value are 16-bit
     high = bus.read_byte_data(Device_Address, addr)
     low = bus.read_byte_data(Device_Address, addr + 1)
 
-    # concatenate higher and lower value
     value = ((high << 8) | low)
- 
+
     # to get signed value from mpu6050
     if (value > 32768):
         value = value - 65536
@@ -63,18 +86,18 @@ Device_Address = 0x68  # MPU6050 device address
 
 MPU_Init()
 
+def print_fn_1(num):
+    print("\nThrottle = " + str(num) + "% - " + str(vehicle.channels.overrides[3]))
+    print("Pitch value - " + str(vehicle.channels.overrides[1]))
+    print('Roll value - '+ str(vehicle.channels.overrides[2]))
 
-print (" Reading Data of Gyroscope and Accelerometer")
-
-a = 1500
-b = 1500
-
-def gyro_stabilize(Gx, Gy, a, b):
-
- 
+def print_fn_2():
+    print("Throttle - " + str(vehicle.channels.overrides[3]))
+    print('Pitch value - ' + str(vehicle.channels.overrides[1]))
+    print('Roll value - ' + str(vehicle.channels.overrides[2]))
 
 
-while True:
+def assign_values():
 
     # Read Accelerometer raw value
     acc_x = read_raw_data(ACCEL_XOUT_H)
@@ -95,17 +118,44 @@ while True:
     Gy = gyro_y / 131.0
     Gz = gyro_z / 131.0
 
-    gyro_stabilize(get_x_rotation(Ax, Ay, Az), get_y_rotation(Ax, Ay, Az), a, b)
-
     #print ("Gx=%.2f" % Gx, '\u00b0' + "/s", "\tGy=%.2f" % Gy, '\u00b0' + "/s", "\tGz=%.2f" % Gz, '\u00b0' + "/s",
     #   	"\tAx=%.2f g" % Ax, "\tAy=%.2f g" % Ay, "\tAz=%.2f g" % Az)
     print('\n')
+    print_fn_2()
     print("X Rotation = %.2f" % get_x_rotation(Ax, Ay, Az))
     print("Y Rotation = %.2f" % get_y_rotation(Ax, Ay, Az))
-    print("a="+str(a), "b="+str(b))
     # print('Gyro_X=' + str(gyro_x), 'Gyro_Y=' + str(gyro_y), 'Gyro_Z=' + str(gyro_z) )
     # print('Gx=%.2f' % Gx, 'Gy=%.2f' % Gy, 'Gz=%.2f' % Gz)
     # print('Acc_X=' + str(acc_x), 'Acc_Y=' + str(acc_y), 'Acc_Z=' + str(acc_z))
     # print('Ax=%.2f' % Ax, 'Ay=%.2f' % Ay, 'Az=%.2f' % Az)
-    #sleep(2)
+    time.sleep(0.5)
 
+def gyro_stabilize(Gx, Gy):
+
+    i = 1
+
+     if Gx > 5:
+	vehicle.channels.overrides[1] -= i
+
+     elif Gx < -2:
+	vehicle.channels.overrides[1] += i
+
+     elif Gy > 5:
+	vehicle.channels.overrides[2] -= i
+
+    elif Gy < -2:
+	vehicle.channels.overrides[2] += i 
+
+def takeoff_with_gyro():
+    if vehicle.channels.overrides[3] < 1700:
+	vehicle.channels.overrides[3] += amt
+
+    if vehicle.channels.overrides[3] == 1700:
+	vehicle.channels.overrides[3] = 1700
+
+
+
+while True:
+
+    assign_values()
+    takeoff_with_gyro()
