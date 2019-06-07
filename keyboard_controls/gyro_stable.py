@@ -155,4 +155,5 @@ print("Max Y Value = " + str(max_y))
 print("Min Y Value = " + str(min_y))
 
 while True:
-    gyro_balance()
+    assign_gyro_values()
+    
