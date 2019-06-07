@@ -66,38 +66,18 @@ MPU_Init()
 
 print (" Reading Data of Gyroscope and Accelerometer")
 
-max = 8
-min = -5
-
 x = 1500
 y = 1500
 
 amt_2 = 1
 
-def gyro_balance(Gx ,Gy):
 
-    global x
-    global y
+list_x = []
+list_y = []
 
-    if Dx > max or Dx < min:
-	if Dx > max:
-	    x = 1470
+count = 0
 
-	elif Dx < min:
-	    x = 1530
-
-    if Dy > max or Dy < min:
-	if Dy > max :
-	    y = 1470
-
-	elif Dy < min:
-	    y = 1530
-
-    else:
-	x = 1500
-	y = 1500
-
-while True:
+def assign_gyro_values():
 
     # Read Accelerometer raw value
     acc_x = read_raw_data(ACCEL_XOUT_H)
@@ -121,21 +101,58 @@ while True:
     Dx = get_x_rotation(Ax, Ay, Az)
     Dy = get_y_rotation(Ax, Ay, Az)
 
-    gyro_balance(Dx, Dy)
+    list_x.append(Dx)
+    list_y.append(Dy)
 
-    #print ("Gx=%.2f" % Gx, '\u00b0' + "/s", "\tGy=%.2f" % Gy, '\u00b0' + "/s", "\tGz=%.2f" % Gz, '\u00b0' + "/s",
-    #   	"\tAx=%.2f g" % Ax, "\tAy=%.2f g" % Ay, "\tAz=%.2f g" % Az)
     print('\n')
     print("X Rotation = %.2f" % Dx)
     print("Y Rotation = %.2f" % Dy)
     print(x)
     print(y)
 
-    #gyro_stabilize(get_x_rotation(Ax, Ay, Az), get_y_rotation(Ax, Ay, Az), x, y)
-    # print('Gyro_X=' + str(gyro_x), 'Gyro_Y=' + str(gyro_y), 'Gyro_Z=' + str(gyro_z) )
-    # print('Gx=%.2f' % Gx, 'Gy=%.2f' % Gy, 'Gz=%.2f' % Gz)
-    # print('Acc_X=' + str(acc_x), 'Acc_Y=' + str(acc_y), 'Acc_Z=' + str(acc_z))
-    # print('Ax=%.2f' % Ax, 'Ay=%.2f' % Ay, 'Az=%.2f' % Az)
-    
+def gyro_balance(Gx, Gy):
 
+    if Gx > max_x or Gx < min_x:
+	if Gx > max_x:
+	    x = 1470
 
+	elif Gx < min_x:
+	    x = 1530
+
+    if Gy > max_y or Gy < min_y:
+	if Gy > max_y:
+	    y = 1470
+
+	elif Gy < min_y:
+	    y = 1530
+
+    else:
+	x = 1500
+	y = 1500
+
+print("Callibrating external gyro sensor")
+
+sleep(1)
+
+while True:
+
+    count += 1
+    assign_gyro_values()
+
+    max_x = max(list_x)
+    min_x = min(list_x)
+    max_y = max(list_y)
+    min_y = min(list_y)
+
+    if count > 1000:
+	break
+
+print("Calibrate x and y min_max values - ")
+print("\n")
+print("Max X Value = " + str(max_x))
+print("Min X Value = " + str(min_x))
+print("Max Y Value = " + str(max_y))
+print("Min Y Value = " + str(min_y))
+
+while True:
+    gyro_balance()
