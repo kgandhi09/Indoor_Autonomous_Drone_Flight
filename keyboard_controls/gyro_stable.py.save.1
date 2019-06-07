@@ -66,36 +66,25 @@ MPU_Init()
 
 print (" Reading Data of Gyroscope and Accelerometer")
 
-max = 8
-min = -5
+a = 1500
+b = 1500
 
-x = 1500
-y = 1500
+def gyro_stabilize(Gx, Gy, a, b):
 
-amt_2 = 1
+    if -2 > Gx > 5:
+	if Gx > 5:
+	    a -= 1
 
-def gyro_balance(Gx ,Gy):
+	elif Gx < -2:
+	    a += 1
 
-    global x
-    global y
+    if -2 > Gy > 5:
+	if Gy > 5:	    b -= 1
 
-    if Dx > max or Dx < min:
-	if Dx > max:
-	    x = 1470
+	elif Gy < -2:
+	    b += 1
 
-	elif Dx < min:
-	    x = 1530
 
-    if Dy > max or Dy < min:
-	if Dy > max :
-	    y = 1470
-
-	elif Dy < min:
-	    y = 1530
-
-    else:
-	x = 1500
-	y = 1500
 
 while True:
 
@@ -118,24 +107,17 @@ while True:
     Gy = gyro_y / 131.0
     Gz = gyro_z / 131.0
 
-    Dx = get_x_rotation(Ax, Ay, Az)
-    Dy = get_y_rotation(Ax, Ay, Az)
-
-    gyro_balance(Dx, Dy)
+    gyro_stabilize(get_x_rotation(Ax, Ay, Az), get_y_rotation(Ax, Ay, Az), a, b)
 
     #print ("Gx=%.2f" % Gx, '\u00b0' + "/s", "\tGy=%.2f" % Gy, '\u00b0' + "/s", "\tGz=%.2f" % Gz, '\u00b0' + "/s",
     #   	"\tAx=%.2f g" % Ax, "\tAy=%.2f g" % Ay, "\tAz=%.2f g" % Az)
     print('\n')
-    print("X Rotation = %.2f" % Dx)
-    print("Y Rotation = %.2f" % Dy)
-    print(x)
-    print(y)
-
-    #gyro_stabilize(get_x_rotation(Ax, Ay, Az), get_y_rotation(Ax, Ay, Az), x, y)
+    print("X Rotation = %.2f" % get_x_rotation(Ax, Ay, Az))
+    print("Y Rotation = %.2f" % get_y_rotation(Ax, Ay, Az))
+    print("a="+str(a), "b="+str(b))
     # print('Gyro_X=' + str(gyro_x), 'Gyro_Y=' + str(gyro_y), 'Gyro_Z=' + str(gyro_z) )
     # print('Gx=%.2f' % Gx, 'Gy=%.2f' % Gy, 'Gz=%.2f' % Gz)
     # print('Acc_X=' + str(acc_x), 'Acc_Y=' + str(acc_y), 'Acc_Z=' + str(acc_z))
     # print('Ax=%.2f' % Ax, 'Ay=%.2f' % Ay, 'Az=%.2f' % Az)
-    
-
+    #sleep(2)
 
