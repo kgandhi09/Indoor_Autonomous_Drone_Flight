@@ -97,7 +97,18 @@ def print_fn_2():
     print('Roll value - ' + str(vehicle.channels.overrides[2]))
 
 
-def assign_values():
+Dx = 0
+Dy = 0
+
+list_x = []
+list_y = []
+
+count = 0
+
+def assign_gyro_values():
+
+    global Dx
+    global Dy
 
     # Read Accelerometer raw value
     acc_x = read_raw_data(ACCEL_XOUT_H)
@@ -118,44 +129,91 @@ def assign_values():
     Gy = gyro_y / 131.0
     Gz = gyro_z / 131.0
 
-    #print ("Gx=%.2f" % Gx, '\u00b0' + "/s", "\tGy=%.2f" % Gy, '\u00b0' + "/s", "\tGz=%.2f" % Gz, '\u00b0' + "/s",
-    #   	"\tAx=%.2f g" % Ax, "\tAy=%.2f g" % Ay, "\tAz=%.2f g" % Az)
+    Dx = get_x_rotation(Ax, Ay, Az)
+    Dy = get_y_rotation(Ax, Ay, Az)
+
+    list_x.append(Dx)
+    list_y.append(Dy)
+
     print('\n')
-    print_fn_2()
-    print("X Rotation = %.2f" % get_x_rotation(Ax, Ay, Az))
-    print("Y Rotation = %.2f" % get_y_rotation(Ax, Ay, Az))
-    # print('Gyro_X=' + str(gyro_x), 'Gyro_Y=' + str(gyro_y), 'Gyro_Z=' + str(gyro_z) )
-    # print('Gx=%.2f' % Gx, 'Gy=%.2f' % Gy, 'Gz=%.2f' % Gz)
-    # print('Acc_X=' + str(acc_x), 'Acc_Y=' + str(acc_y), 'Acc_Z=' + str(acc_z))
-    # print('Ax=%.2f' % Ax, 'Ay=%.2f' % Ay, 'Az=%.2f' % Az)
-    time.sleep(0.5)
+    print("X Rotation = %.2f" % Dx)
+    print("Y Rotation = %.2f" % Dy)
 
-def gyro_stabilize(Gx, Gy):
+def sensitivity_factor(num):
+    if -1 < num < 0:
+	return -(5*num)
 
-    i = 1
+    if 0 < num < 1:
+	return (5*num)
 
-     if Gx > 5:
-	vehicle.channels.overrides[1] -= i
+    if num <= -1:
+	return -((65*num)/100)
 
-     elif Gx < -2:
-	vehicle.channels.overrides[1] += i
+    if num >= 1:
+    	return (65*num)/100
 
-     elif Gy > 5:
-	vehicle.channels.overrides[2] -= i
+def gyro_balance(Gx, Gy):
 
-    elif Gy < -2:
-	vehicle.channels.overrides[2] += i 
+    global x
+    global y
 
-def takeoff_with_gyro():
-    if vehicle.channels.overrides[3] < 1700:
-	vehicle.channels.overrides[3] += amt
+    if min_x < Gx < max_x and min_y < Gy < max_y:
+	vehicle.channels.overrides[1] = 1500
+	vehicle.channels.overrides[2] = 1500
 
-    if vehicle.channels.overrides[3] == 1700:
-	vehicle.channels.overrides[3] = 1700
+    else:
+
+        if Gx > max_x + sensitivity_factor(max_x):
+    	    vehicle.channels.overrides[1] = 1470
+
+        if Gx < min_x - sensitivity_factor(min_x):
+	    vehicle.channels.overrides[1] = 1530
+
+        if Gy > max_y + sensitivity_factor(max_y):
+	    vehicle.channels.overrides[2] = 1470
+
+        if Gy < min_y - sensitivity_factor(min_y):
+	    vehicle.channels.overrides[3] = 1530
+
+    print("X Axis = " + str(x))
+    print("Y Axis = " + str(y))
+    #print(Gx > max_x + sf(max_x)) # ---- pos x axis
+    #print(Gx < min_x - sf(min_x)) # ---- neg x axis
+    #print(Gy > max_x + sf(max_y)) # ---- pos y axis
+    #print(Gy < min_x - sf(min_y)) # ---- neg y axis
 
 
+print("Callibrating external gyro sensor")
+
+sleep(1)
 
 while True:
 
-    assign_values()
-    takeoff_with_gyro()
+    count += 1
+    assign_gyro_values()
+
+    max_x = round(max(list_x), 2)
+    min_x = round(min(list_x), 2)
+    max_y = round(max(list_y), 2)
+    min_y = round(min(list_y), 2)
+
+    if count > 1000:
+	break
+
+sleep(1)
+
+print("Calibrate x and y min_max values - ")
+print("\n")
+print("Max X Value = " + str(max_x))
+print("Min X Value = " + str(min_x))
+print("Max Y Value = " + str(max_y))
+print("Min Y Value = " + str(min_y))
+print("\n")
+print("Initializing gyro balance for drone")
+
+sleep(4)
+
+while True:
+
+    assign_gyro_values()
+    gyro_balance(Dx, Dy)
