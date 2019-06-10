@@ -1,3 +1,4 @@
+
 import smbus # import SMBus module of I2C from time import sleep # import
 from time import sleep
 import math
@@ -71,6 +72,8 @@ y = 1500
 
 amt_2 = 1
 
+Dx = 0
+Dy = 0
 
 list_x = []
 list_y = []
@@ -78,6 +81,9 @@ list_y = []
 count = 0
 
 def assign_gyro_values():
+
+    global Dx
+    global Dy
 
     # Read Accelerometer raw value
     acc_x = read_raw_data(ACCEL_XOUT_H)
@@ -107,28 +113,50 @@ def assign_gyro_values():
     print('\n')
     print("X Rotation = %.2f" % Dx)
     print("Y Rotation = %.2f" % Dy)
-    print(x)
-    print(y)
+
+def sensitivity_factor(num):
+    if -1 < num < 0:
+	return -(5*num)
+
+    if 0 < num < 1:
+	return (5*num)
+
+    if num <= -1:
+	return -((65*num)/100)
+
+    if num >= 1:
+    	return (65*num)/100
 
 def gyro_balance(Gx, Gy):
 
-    if Gx > max_x or Gx < min_x:
-	if Gx > max_x:
-	    x = 1470
+    global x
+    global y
 
-	elif Gx < min_x:
-	    x = 1530
-
-    if Gy > max_y or Gy < min_y:
-	if Gy > max_y:
-	    y = 1470
-
-	elif Gy < min_y:
-	    y = 1530
-
-    else:
+    if min_x < Gx < max_x and min_y < Gy < max_y:
 	x = 1500
 	y = 1500
+
+    else:
+
+        if Gx > max_x + sensitivity_factor(max_x):
+    	    x = 1470
+
+        if Gx < min_x - sensitivity_factor(min_x):
+	    x = 1530
+
+        if Gy > max_y + sensitivity_factor(max_y):
+	    y = 1470
+
+        if Gy < min_y - sensitivity_factor(min_y):
+	    y = 1530
+
+    print("X Axis = " + str(x))
+    print("Y Axis = " + str(y))
+    #print(Gx > max_x + sf(max_x)) # ---- pos x axis
+    #print(Gx < min_x - sf(min_x)) # ---- neg x axis
+    #print(Gy > max_x + sf(max_y)) # ---- pos y axis
+    #print(Gy < min_x - sf(min_y)) # ---- neg y axis
+
 
 print("Callibrating external gyro sensor")
 
@@ -139,13 +167,15 @@ while True:
     count += 1
     assign_gyro_values()
 
-    max_x = max(list_x)
-    min_x = min(list_x)
-    max_y = max(list_y)
-    min_y = min(list_y)
+    max_x = round(max(list_x), 2)
+    min_x = round(min(list_x), 2)
+    max_y = round(max(list_y), 2)
+    min_y = round(min(list_y), 2)
 
     if count > 1000:
 	break
+
+sleep(1)
 
 print("Calibrate x and y min_max values - ")
 print("\n")
@@ -153,7 +183,13 @@ print("Max X Value = " + str(max_x))
 print("Min X Value = " + str(min_x))
 print("Max Y Value = " + str(max_y))
 print("Min Y Value = " + str(min_y))
+print("\n")
+print("Initializing gyro balance for drone")
+
+sleep(4)
 
 while True:
+
     assign_gyro_values()
-    
+    gyro_balance(Dx, Dy)
+
