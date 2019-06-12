@@ -160,7 +160,7 @@ def gyro_balance(Gx, Gy):
 
 print("Callibrating external gyro sensor")
 
-sleep(1)
+time.sleep(1)
 
 while True:
 
@@ -175,7 +175,7 @@ while True:
     if count > 1000:
 	break
 
-sleep(1)
+time.sleep(1)
 
 print("Calibrate x and y min_max values - ")
 print("\n")
@@ -186,7 +186,7 @@ print("Min Y Value = " + str(min_y))
 print("\n")
 print("Initializing gyro balance for drone")
 
-sleep(4)
+time.sleep(4)
 
 while True:
 
