@@ -36,7 +36,7 @@ def print_fn():
 vehicle.armed = True
 time.sleep(0.5)
 
-vehicle.channels.overrides[3] = 1100  # --- Throttle
+#vehicle.channels.overrides[3] = 1100  # --- Throttle
 vehicle.channels.overrides[2] = 1499  # --- Pitch
 vehicle.channels.overrides[1] = 1502  # --- Roll
 
@@ -45,7 +45,7 @@ list_y = []
 
 count = 0
 
-def sensitivity_factor(num):
+def sf(num):
     if -1 < num < 0:
 	return -(5*num)
 
@@ -68,23 +68,25 @@ def gyro_balance(Gx, Gy):
 
     else:
 
-        if Gx > max_x + sensitivity_factor(max_x):
+        if Gx > max_x + sf(max_x):
     	    vehicle.channels.overrides[1] = 1470
 
-        if Gx < min_x - sensitivity_factor(min_x):
+        if Gx < min_x - sf(min_x):
 	    vehicle.channels.overrides[1] = 1530
 
-        if Gy > max_y + sensitivity_factor(max_y):
+        if Gy > max_y + sf(max_y):
 	    vehicle.channels.overrides[2] = 1470
 
-        if Gy < min_y - sensitivity_factor(min_y):
+        if Gy < min_y - sf(min_y):
 	    vehicle.channels.overrides[3] = 1530
 
     print("X Axis = " + str(vehicle.channels.overrides[1]))
     print("Y Axis = " + str(vehicle.channels.overrides[2]))
-    print(min_x  < Gx < max_x and min_y < Gy < max_y ) # ----- stable 
-    print(Gx > max_x + sensitivity_factor(max_x)) # --- positive x axis
-
+    print(min_x - sf(min_x) < Gx < max_x + sf(max_x) and min_y - sf(min_y) < Gy < max_y + sf(max_y)) # ----- stable 
+    print(Gx > max_x + sf(max_x))
+    print(Gx < min_x - sf(min_x))
+    print(Gy > max_y + sf(max_y))
+    print(Gy < min_y - sf(min_y))
 
 print('\n'+"Calibrating gyro sensor")
 
@@ -92,20 +94,21 @@ def convert_to_angles(num):
     return num*90
 
 while True:
-
-    vehicle.channels.overrides[3] = 1100
-
     count += 1
 
-    pitch = vehicle.attitude.pitch
-    roll = vehicle.attitude.roll
+ #   vehicle.channels.overrides[3] = 1040
+
+    pitch = convert_to_angles(vehicle.attitude.pitch)
+    roll = convert_to_angles(vehicle.attitude.roll)
 
     list_x.append(roll)
     list_y.append(pitch)
 
     print('\n')
-    print("X rotation = %.2f" % roll)
-    print("Y rotation = %.2f" % pitch)
+    print("X rotation = " + str(roll))
+    print("Y rotation = " + str(pitch))
+
+    time.sleep(1)
 
     if count > 1000:
 	break
@@ -132,12 +135,15 @@ time.sleep(2)
 
 while True:
 
-    new_pitch = vehicle.attitude.pitch
-    new_roll = vehicle.attitude.roll
+#    vehicle.channels.overrides[3] = 1040
 
-    print('\n'+"X rotation = %.2f" % new_roll )
-    print("Y rotation = %.2f" % new_pitch)
+    new_pitch = convert_to_angles(vehicle.attitude.pitch)
+    new_roll = convert_to_angles(vehicle.attitude.roll)
+
+    print('\n'+"X rotation = " + str(new_roll))
+    print("Y rotation = " + str(new_pitch))
 
     gyro_balance(new_roll, new_pitch)
 
-    time.sleep(1)
+    time.sleep(1
+)

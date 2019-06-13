@@ -56,9 +56,11 @@ vehicle.send_mavlink(msg)
 
 def test(self, attr_name, value):
     attr_name = 'attitude'
-    value = vehicle.attitude.roll
+    value = vehicle.attitude
     print(value)
 
-while True:
-   # vehicle.channels.overrides[3] = 1100
-    print(vehicle.attitude)
+vehicle.add_attribute_listener('attitude', test)
+
+time.sleep(5)
+
+vehicle.close()
