@@ -110,7 +110,7 @@ while True:
 
     time.sleep(1)
 
-    if count > 1000:
+    if count > 20:
 	break
 
 time.sleep(2)
@@ -145,5 +145,4 @@ while True:
 
     gyro_balance(new_roll, new_pitch)
 
-    time.sleep(1
-)
+    time.sleep(1)

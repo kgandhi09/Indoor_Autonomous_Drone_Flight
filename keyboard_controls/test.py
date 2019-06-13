@@ -36,7 +36,7 @@ start = time.time()
 def no_of_args(func):
     return str(func.func_code.co_varnames)
 
-msg = vehicle.message_factory.hil_gps_encode(
+msg = vehicle.message_factory.hil_gps_t_encode(
     start,
     3,
     9.0,
@@ -52,13 +52,17 @@ msg = vehicle.message_factory.hil_gps_encode(
     255,
     )
 
+# print(msg)
 vehicle.send_mavlink(msg)
 
 def test(self, attr_name, value):
     attr_name = 'attitude'
-    value = vehicle.attitude.roll
-    print(value)
+    print("got the data!")
 
-while True:
-   # vehicle.channels.overrides[3] = 1100
-    print(vehicle.attitude)
+vehicle.add_message_listener('HIL_GPS', test)
+time.sleep(5)
+
+#@vehicle.on_message('HEARTBEAT')
+#def my_method(self, name, msg):
+#    name = 'HEARTBEAT'
+#    print('got the heartbeat')
