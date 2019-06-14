@@ -1,6 +1,6 @@
 from __future__ import print_function
 import smbus
-import time 
+import time
 import math
 from dronekit import connect, VehicleMode
 from pymavlink import mavutil
@@ -38,7 +38,7 @@ def print_fn():
 vehicle.armed = True
 time.sleep(0.5)
 
-vehicle.channels.overrides[3] = 1040  # --- Throttle
+#vehicle.channels.overrides[3] = 1040  # --- Throttle
 vehicle.channels.overrides[2] = 1499  # --- Pitch
 vehicle.channels.overrides[1] = 1502  # --- Roll
 
@@ -97,18 +97,18 @@ def convert_to_angles(num):
 
 while True:
     count += 1
-    vehicle.channels.overrides[3] = 1040
+    #vehicle.channels.overrides[3] = 1040
     pitch = convert_to_angles(vehicle.attitude.pitch)
     roll = convert_to_angles(vehicle.attitude.roll)
 
     list_x.append(roll)
     list_y.append(pitch)
 
-    print('\n')
-    print("X rotation = " + str(roll))
-    print("Y rotation = " + str(pitch))
+    #print('\n')
+    #print("X rotation = " + str(roll))
+    #print("Y rotation = " + str(pitch))
 
-    time.sleep(1)
+    time.sleep(0.25)
 
     if count > 30:
 	break
@@ -134,40 +134,45 @@ print('\n' + "Taking Off!" + '\n')
 time.sleep(2)
 
 count2 = 0
+i = 0
+j = 0
 
 def takeoff():
      global count2
+     global i
+     global j
      m = 0
      while True:
 	if m == 0:
-     	    vehicle.channels.overrides[3] = 1040
-	    time.sleep(1)
-            vehicle.channels.overrides[3] = 1200
-	    time.sleep(1)
-            vehicle.channels.overrides[3] = 1300
-	    time.sleep(1)
-	    m = 1
+	    vehicle.channels.overrides[3] = 1040
+	    while True:
+		vehicle.channels.overrides[3] += 5
+		print(vehicle.channels.overrides[3])
+		time.sleep(0.7)
+		i += 1
+		if i > 75:
+		    m = 1
+		    break
 
-	if m == 1:
-	    vehicle.channels.overrides[3] = 1500
-	    time.sleep(1)
-            count2 += 1
+	if j = 0:
+	    while True:
+		j += 1
+		vehicle.channels.overrides[3] = 1420
+		time.sleep(1)
+		if i > 5
+		    m = 2
 
 	if count2 > 25:
 	    m = 2
 
 	if m == 2:
-	    vehicle.channels.overrides[3] = 1400
-	    time.sleep(1)
-	    vehicle.channels.overrides[3] = 1300
-	    time.sleep(1)
-            vehicle.channels.overrides[3] = 1200
-	    time.sleep(1)
-	    vehicle.channels.overrides[3] = 1100
-	    time.sleep(1)
-	    vehicle.channels.overrides[3] = 1040
-	    time.sleep(1)
-            vehicle.channels.overrides[3] = 1000
+	    while True:
+		vehicle.channels.overrides[3] -= 50
+		time.sleep(1)
+		print(vehicle.channels.overrides[3])
+		break
+
+	    break
 
 def gyro_stabilize():
     while True:
@@ -181,6 +186,8 @@ def gyro_stabilize():
         gyro_balance(new_roll, new_pitch)
 
         time.sleep(1)
+
+vehicle.armed = True
 
 if __name__ == "__main__":
     t1 = threading.Thread(target=takeoff)
