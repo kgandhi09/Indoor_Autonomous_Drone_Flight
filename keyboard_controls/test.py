@@ -30,13 +30,15 @@ vehicle = connect(connection_string, baud=921600,  wait_ready=True)
 
 
 vehicle.armed = True
+time.sleep(0.5)
 
+'''
 start = time.time()
 
 def no_of_args(func):
     return str(func.func_code.co_varnames)
 
-msg = vehicle.message_factory.hil_gps_t_encode(
+msg = vehicle.message_factory.hil_gps_encode(
     start,
     3,
     9.0,
@@ -53,16 +55,47 @@ msg = vehicle.message_factory.hil_gps_t_encode(
     )
 
 # print(msg)
-vehicle.send_mavlink(msg)
+#vehicle.send_mavlink(msg)
 
 def test(self, attr_name, value):
     attr_name = 'attitude'
     print("got the data!")
 
-vehicle.add_message_listener('HIL_GPS', test)
-time.sleep(5)
+#vehicle.add_message_listener('HIL_GPS', test)
+#time.sleep(5)
 
 #@vehicle.on_message('HEARTBEAT')
 #def my_method(self, name, msg):
 #    name = 'HEARTBEAT'
 #    print('got the heartbeat')
+'''
+
+
+a = 1000
+
+m = 0
+
+while True:
+    if m == 0:
+	a = 1040
+	print(a)
+	time.sleep(1)
+	a = 1100
+	print(a)
+	time.sleep(1)
+	a = 1200
+	print(a)
+	time.sleep(1)
+ 	a = 1300
+	print(a)
+	time.sleep(1)
+	a = 1400
+	print(a)
+	time.sleep(1)
+	m = 1
+
+    if m == 1:
+	a = 1500
+	print(a)
+
+    time.sleep(1)
