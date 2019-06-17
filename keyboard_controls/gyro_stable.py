@@ -1,4 +1,3 @@
-
 import smbus # import SMBus module of I2C from time import sleep # import
 from time import sleep
 import math

@@ -7,7 +7,13 @@ from pymavlink import mavutil
 import sys, os
 from optparse import OptionParser
 import argparse
+from pynput.keyboard import Key, Controller, Listener
+import readchar
+import threading
 
+keyboard = Controller()
+
+'''
 parser = argparse.ArgumentParser(
     description='Example showing how to set and clear vehicle channel-override information.')
 parser.add_argument('--connect',
@@ -31,7 +37,7 @@ vehicle = connect(connection_string, baud=921600,  wait_ready=True)
 
 vehicle.armed = True
 time.sleep(0.5)
-
+'''
 '''
 start = time.time()
 
@@ -70,32 +76,3 @@ def test(self, attr_name, value):
 #    print('got the heartbeat')
 '''
 
-
-a = 1000
-
-m = 0
-
-while True:
-    if m == 0:
-	a = 1040
-	print(a)
-	time.sleep(1)
-	a = 1100
-	print(a)
-	time.sleep(1)
-	a = 1200
-	print(a)
-	time.sleep(1)
- 	a = 1300
-	print(a)
-	time.sleep(1)
-	a = 1400
-	print(a)
-	time.sleep(1)
-	m = 1
-
-    if m == 1:
-	a = 1500
-	print(a)
-
-    time.sleep(1)

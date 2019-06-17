@@ -25,6 +25,7 @@ args = parser.parse_args()
 
     
 
+
 connection_string = args.connect
 
 print('Connecting to vehicle on: %s' % connection_string)
@@ -143,34 +144,36 @@ def takeoff():
      global j
      m = 0
      while True:
-	if m == 0:
+	if i == 0:
 	    vehicle.channels.overrides[3] = 1040
 	    while True:
 		vehicle.channels.overrides[3] += 5
 		print(vehicle.channels.overrides[3])
-		time.sleep(0.7)
+		time.sleep(0.5)
 		i += 1
 		if i > 75:
-		    m = 1
+		    j = 1
 		    break
 
-	if j = 0:
+	if j == 1:
 	    while True:
 		j += 1
 		vehicle.channels.overrides[3] = 1420
+		print(vehicle.channels.overrides[3])
 		time.sleep(1)
-		if i > 5
+		if j > 5:
 		    m = 2
-
-	if count2 > 25:
-	    m = 2
+		    break
 
 	if m == 2:
 	    while True:
 		vehicle.channels.overrides[3] -= 50
 		time.sleep(1)
 		print(vehicle.channels.overrides[3])
-		break
+		m += 1
+		if m > 7:
+		    vehicle.channels.overrides[3] = 0
+		    break
 
 	    break
 
