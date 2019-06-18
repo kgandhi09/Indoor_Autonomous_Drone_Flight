@@ -33,11 +33,15 @@ print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, baud=921600,  wait_ready=True)
 
 vehicle.channels.overrides[3] = 1040 # --- Thhrottle
+vehicle.channels.overrides[2] = 1499 # --- Pitch
+vehicle.channels.overrides[1] = 1502 # --- Roll
 
 def angle(num):
     return num*90
 
 print("\nStoring Gyro Values for reference!")
+
+flag = False
 
 #----------- storing gyro axis values --------------------- #
 list_x = []
@@ -79,25 +83,40 @@ keyboard = Controller()
 amt = 10
 
 def takeoff(key):
-    if key == Key.up and vehicle.channels.overrides[3] < 2000:
-	vehicle.channels.overrides[3] += amt
-	#print('Up = '+ str(vehicle.channels.overrides[3]))
 
-    elif key == Key.down and vehicle.channels.overrides[3] > 1040:
-	vehicle.channels.overrides[3] -= amt
-	#print('Down = ' + str(vehicle.channels.overrides[3]))
+    if not flag:
+        if key == Key.up and vehicle.channels.overrides[3] < 2000:
+   	    vehicle.channels.overrides[3] += amt
+	    #print('Up = '+ str(vehicle.channels.overrides[3]))
 
-    elif key == Key.esc:
-	vehicle.channels.overrides[3] = 1000
+        elif key == Key.down and vehicle.channels.overrides[3] > 1040:
+	    vehicle.channels.overrides[3] -= amt
+	    #print('Down = ' + str(vehicle.channels.overrides[3]))
+
+        elif key == Key.esc:
+	    vehicle.channels.overrides[3] = 1000
 
 # ----------------------------------------------------------- #
 
 def stable_pos(Gx, Gy):
+    result = False
     if min_x - 2 < Gx < max_x + 2 and min_y - 2 < Gy < max_y + 2:
-	print('True')
-	return True
+	result = True
+    return result
+
+def stabilize(Gx, Gy):
+    i = 1
+    if Gx > max_x + 2:
+	vehicle.channels.overrides[1] -= i
+    if Gx < min_x - 2:
+	vehicle.channels.overrides[1] += i
+    if Gy > max_y + 2:
+	vehicle.channels.overrides[2] -= i
+    if Gy < min_y - 2:
+	vehicle.channels.overrides[2] ++ i
 
 def gyro():
+    global flag
     global t1
     global t2
     amt2 = 1
@@ -106,9 +125,12 @@ def gyro():
     	new_pitch = angle(vehicle.attitude.pitch)
     	new_roll = angle(vehicle.attitude.roll)
 
-        if not stable_pos(new_roll, new_pitch):
+        if stable_pos(new_roll, new_pitch):
+	    flag = False 
+	    print('True')
+	elif 1030 < vehicle.channels.overrides[3] < 2000:
+	    flag = True
 	    print('False')
-
 
    	time.sleep(1)
 
