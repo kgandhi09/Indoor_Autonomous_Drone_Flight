@@ -139,7 +139,6 @@ def stable_pos(Gx, Gy):
 	result = True
     return result
 
-
 # Counter valu es if drone is not in stable position
 #param, Gx, Gy
 #Gx - current(real time) X rotation gyro value
@@ -150,13 +149,16 @@ def stabilize(Gx, Gy):
     if not flag_2:
         if Gx > max_x + sf: #and 1000 <= vehicle.channels.overrides[1] <= 2000:
 	    vehicle.channels.overrides[1] -= i
+	    vehicle.channels.overrides[2] -= i
         elif Gx < min_x - sf: #and 1000 <= vehicle.channels.overrides[1] <= 2000:
 	    vehicle.channels.overrides[1] += i
+	    vehicle.channels.overrides[2] += i
         if Gy > max_y + sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
 	    vehicle.channels.overrides[2] -= i
+	    vehicle.channels.overrides[1] += i
         elif Gy < min_y - sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
 	    vehicle.channels.overrides[2] += i
-
+	    vehicle.channels.overrides[1] -= i
 	'''
 	if Gz > max_z + sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
 	    vehicle.channels.overrides[4] -= i
@@ -165,7 +167,7 @@ def stabilize(Gx, Gy):
 	'''
 
 # If throttle in stable condition - continue throttle value
-# IF throttle not in stable condition - stabilize
+# If throttle not in stable condition - stabilize and again continue throttle if stabilize true
 def gyro():
     global flag
     global t1
@@ -187,7 +189,7 @@ def gyro():
 	    #list_channel_1.append(vehicle.channels.overrides[1])
 	    #list_channel_2.append(vehicle.channels.overrides[2])
 	    #print('False')
-    	time.sleep(0.1)
+    	time.sleep(0.2)
 
 # ----------------------------------------------------------- #
 
@@ -205,3 +207,4 @@ if __name__ == '__main__':
     t2.start()
     lis.start()
     lis.join()
+

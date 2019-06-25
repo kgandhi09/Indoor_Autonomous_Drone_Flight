@@ -38,12 +38,33 @@ vehicle = connect(connection_string, baud=921600,  wait_ready=True)
 
 list_x = []
 count = 0
+
+vehicle.armed = True
+time.sleep(0.5)
+
+vehicle.send_calibrate_vehicle_level
+print('Vehicle level')
+time.sleep(1)
+vehicle.send_calibrate_gyro
+print('Gyro calibrated')
+time.sleep(1)
+vehicle.send_calibrate_accelerometer
+print('Accel calibrated')
+time.sleep(1)
+vehicle.send_calibrate_magnetometer
+print('Magnetometer calibrated')
+time.sleep(1)
+
 while True:
-    count += 1
+    #count += 1
     #pitch = vehicle.attitude.pitch*60
     #roll = vehicle.attitude.roll*60
     #print(roll)
     #print(pitch)
-    print(vehicle.velocity)
-    time.sleep(0.3)
+    #print(vehicle.groundspeed)
+    #print(vehicle.ekf_ok)
+    #time.sleep(0.3)
 
+    print(vehicle.attitude.roll*60, vehicle.attitude.pitch*60)
+
+    time.sleep(0.1)
