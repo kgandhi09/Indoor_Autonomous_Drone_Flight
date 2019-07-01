@@ -42,29 +42,19 @@ count = 0
 vehicle.armed = True
 time.sleep(0.5)
 
-vehicle.send_calibrate_vehicle_level
-print('Vehicle level')
-time.sleep(1)
-vehicle.send_calibrate_gyro
-print('Gyro calibrated')
-time.sleep(1)
-vehicle.send_calibrate_accelerometer
-print('Accel calibrated')
-time.sleep(1)
-vehicle.send_calibrate_magnetometer
-print('Magnetometer calibrated')
-time.sleep(1)
-
 while True:
     #count += 1
-    #pitch = vehicle.attitude.pitch*60
-    #roll = vehicle.attitude.roll*60
-    #print(roll)
-    #print(pitch)
+    pitch = vehicle.attitude.pitch*60
+    roll = vehicle.attitude.roll*60
+    print('\n' + str(roll))
+    print(pitch)
     #print(vehicle.groundspeed)
     #print(vehicle.ekf_ok)
     #time.sleep(0.3)
 
-    print(vehicle.attitude.roll*60, vehicle.attitude.pitch*60)
+    #print(vehicle.attitude.roll*60, vehicle.attitude.pitch*60)
 
-    time.sleep(0.1)
+    #if vehicle.on_message('HEARTBEAT'):
+	#print(vehicle.attitude.roll*60)
+
+    time.sleep(0.2)

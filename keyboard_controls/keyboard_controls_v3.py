@@ -52,73 +52,16 @@ if not connection_string:
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, baud=921600,  wait_ready=True)
 
-def MPU_Init():
-    bus.write_byte_data(Device_Address, SMPLRT_DIV, 7)
-    bus.write_byte_data(Device_Address, PWR_MGMT_1, 1)
-    bus.write_byte_data(Device_Address, CONFIG, 0)
-    bus.write_byte_data(Device_Address, GYRO_CONFIG, 24)
-    bus.write_byte_data(Device_Address, INT_ENABLE, 1)
-
-def read_raw_data(addr):
-    high = bus.read_byte_data(Device_Address, addr)
-    low = bus.read_byte_data(Device_Address, addr + 1)
-
-    value = ((high << 8) | low)
-
-    if (value > 32768):
-	value -= 65536
-
-    return value
-
-def dist(x,y):
-    return math.sqrt((x*x) + (y*y))
-
-def get_x_rotation(x,y,z):
-    radians = math.atan2(x, dist(y,z))
-    return math.degrees(radians)
-
-def get_y_rotation(x,y,z):
-    radians = math.atan2(y, dist(x,z))
-    return math.degrees(radians)
-
-
-bus = smbus.SMBus(1)
-Device_Address = 0x68
-
-MPU_Init()
-
-print("Reading GYroscope and Accelerometer Data")
-
-def assign_values():
-    acc_x = read_raw_data(ACCEL_XOUT_H)
-    acc_y = read_raw_data(ACCEL_YOUT_H)
-    acc_z = read_raw_data(ACCEL_ZOUT_H)
-
-    gyro_x = read_raw_data(GYRO_XOUT_H)
-    gyro_y = read_raw_data(GYRO_YOUT_H)
-    gyro_z = read_raw_data(GYRO_ZOUT_H)
-
-    Ax = acc_x/16834.0
-    Ay = acc_y/16834.0
-    Az = acc_z/16834.0
-
-    Gx = gyro_x/131.0
-    Gy = gyro_y/131.0
-    Gz = gyro_z/131.0
-
-    print('\n')
-    print("X Rotation = %.2f" % get_x_rotation(Ax, Ay, Az))
-    print("Y Rotation = %.2f" % get_y_rotation(Ax, Ay, Az))
-
 vehicle.armed = True
 time.sleep(0.5)
 
-vehicle.channels.overrides[3] = 1040  # --- Throttle
-vehicle.channels.overrides[2] = 1499  # --- Pitch
-vehicle.channels.overrides[1] = 1502  # --- Roll
+vehicle.channels.overrides[3] = 1030  # --- Throttle
+vehicle.channels.overrides[2] = 1650  # --- Pitch
+vehicle.channels.overrides[1] = 1750  # --- Roll
+vehicle.channels.overrides[4] = 1380  # yaw
 
-amt = 40
-amt_2 = 30
+amt = 4
+amt_2 = 2
 m = 0
 
 def print_fn_1(num):
@@ -128,57 +71,66 @@ def print_fn_1(num):
 
 def print_fn_2():
     print("Throttle - " + str(vehicle.channels.overrides[3]))
-    print('Pitch value - ' + str(vehicle.channels.overrides[1]))
-    print('Roll value - ' + str(vehicle.channels.overrides[2]))
+    print('Pitch value - ' + str(vehicle.channels.overrides[2]))
+    print('Roll value - ' + str(vehicle.channels.overrides[1]))
 
 def key_press(event):
     if m == 0:
         if event.char == event.keysym: # ----------- standard-keys
             if event.keysym == 'k':
-                vehicle.channels.overrides[3] = 1000
+                vehicle.channels.overrides[3] = 1000  # throttle
                 vehicle.channels.overrides[2] = 1499  # pitch
                 vehicle.channels.overrides[1] = 1500  # roll
+		#vehicle.channels.overrides[4] = 1500  # yaw
                 print("kill")
                 print("\nThrottle value - " + str(vehicle.channels.overrides[3]))
                 print('Pitch value - ' + str(vehicle.channels.overrides[1]))
                 print('Roll value - ' +   str(vehicle.channels.overrides[2]))
-            elif event.keysym == 'w' and vehicle.channels.overrides[3] < 1500:
+            elif event.keysym == 'w' and vehicle.channels.overrides[3] < 2000:
                 vehicle.channels.overrides[3] += amt
-                print_fn_2()
+                #print_fn_2()
 
             elif event.keysym == 's' and vehicle.channels.overrides[3] > 1040:
                 vehicle.channels.overrides[3] -= amt
-                print_fn_2()
-
+                #print_fn_2()
+	    
+	    elif event.keysym == 'q':
+		vehicle.channels.overrides[4] -= amt_2
+	    elif event.keysym == 'e':
+		vehicle.channels.overrides[4] += amt_2
 
         else :                        # ----------- non-standard keys
             if event.keysym == 'Up' :
+                vehicle.channels.overrides[1] += amt_2
                 vehicle.channels.overrides[2] -= amt_2
-                print("\nForward")
-                print_fn_2()
-                global m
-                m = 1
+                #print("\nForward")
+                #print_fn_2()
+                #global m
+                #m = 1
             
             elif event.keysym == 'Down' :
-                vehicle.channels.overrides[2] += amt_2 
-                print("\nBackward")
-                print_fn_2()
-                global m
-                m = 1
+                vehicle.channels.overrides[1] -= amt_2
+                vehicle.channels.overrides[2] += amt_2
+                #print("\nBackward")
+                #print_fn_2()
+                #global m
+                #m = 1
             
             elif event.keysym == 'Left' :
-                vehicle.channels.overrides[1] -= amt_2 
-                print("\nLeft")
-                print_fn_2()
-                global m
-                m = 1
+                vehicle.channels.overrides[2] -= amt_2
+                vehicle.channels.overrides[1] -= amt_2
+                #print("\nLeft")
+                #print_fn_2()
+                #global m
+                #m = 1
                 
             elif event.keysym == 'Right' :
-                vehicle.channels.overrides[1] += amt_2 
-                print("\nRight")
-                print_fn_2()
-                global m
-                m = 1
+                vehicle.channels.overrides[1] += amt_2
+                vehicle.channels.overrides[2] += amt_2 
+                #print("\nRight")
+                #print_fn_2()
+                #global m
+                #m = 1
 
 #    else:  # -- non standard keys
         
@@ -218,7 +170,7 @@ def quit():
 root = tk.Tk()
 print(">> Control the drone with the arrow keys. Press r for RTL mode")
 root.bind('<KeyPress>', key_press)
-root.bind('<KeyRelease>', key_down)
+#root.bind('<KeyRelease>', key_down)
 #root.bind_all('<Key>', key)
 tk.Button(root, text="Quit", command=root.destroy).pack()
 root.mainloop()

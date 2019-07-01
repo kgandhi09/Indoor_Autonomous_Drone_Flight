@@ -1,3 +1,4 @@
+
 from __future__ import print_function
 import smbus
 import time
@@ -31,7 +32,7 @@ args = parser.parse_args()
 connection_string = args.connect
 
 print('Connecting to vehicle on: %s' % connection_string)
-vehicle = connect(connection_string, baud=921600,  wait_ready=False)
+vehicle = connect(connection_string, baud=921600,  wait_ready=True)
 
 vehicle.armed = True
 
@@ -145,24 +146,20 @@ def stable_pos(Gx, Gy):
 #Gx - current(real time) X rotation gyro value
 #Gy - current(real time) Y rotation gyro value
 def stabilize(Gx, Gy):
-    i = 8
+    i = 1
     if not flag_2:
-	#Left motion
         if Gx > max_x + sf: #and 1000 <= vehicle.channels.overrides[1] <= 2000:
 	    vehicle.channels.overrides[1] -= i
-	    vehicle.channels.overrides[2] -= i
-	#Right motion
+	    #vehicle.channels.overrides[2] -= i
         elif Gx < min_x - sf: #and 1000 <= vehicle.channels.overrides[1] <= 2000:
 	    vehicle.channels.overrides[1] += i
-	    vehicle.channels.overrides[2] += i
-	#Backward Motion
+	    #vehicle.channels.overrides[2] += i
         if Gy > max_y + sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
-	    vehicle.channels.overrides[2] += i
-	    vehicle.channels.overrides[1] -= i
-	#Forward Motion
-        elif Gy < min_y - sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
 	    vehicle.channels.overrides[2] -= i
-	    vehicle.channels.overrides[1] += i
+	    #vehicle.channels.overrides[1] += i
+        elif Gy < min_y - sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
+	    vehicle.channels.overrides[2] += i
+	    #vehicle.channels.overrides[1] -= i
 	'''
 	if Gz > max_z + sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
 	    vehicle.channels.overrides[4] -= i
@@ -193,7 +190,7 @@ def gyro():
 	    #list_channel_1.append(vehicle.channels.overrides[1])
 	    #list_channel_2.append(vehicle.channels.overrides[2])
 	    #print('False')
-    	time.sleep(0.3)
+    	time.sleep(0.2)
 
 # ----------------------------------------------------------- #
 
