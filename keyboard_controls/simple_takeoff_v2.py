@@ -11,6 +11,7 @@ import threading
 from pynput.keyboard import Key, Controller, Listener
 import readchar
 import pickle
+import pigpio
 
 parser = argparse.ArgumentParser(
     description='Example showing how to set and clear vehicle channel-override information.')
@@ -36,8 +37,8 @@ vehicle = connect(connection_string, baud=921600,  wait_ready=False)
 vehicle.armed = True
 
 #vehicle.channels.overrides[3] = 1040 # --- Thhrottle
-vehicle.channels.overrides[2] = 1499 # --- Pitch
-vehicle.channels.overrides[1] = 1502 # --- Roll
+#vehicle.channels.overrides[2] = 1499 # --- Pitch
+#vehicle.channels.overrides[1] = 1502 # --- Roll
 #vehicle.channels.overrides[4] = 1500
 
 def angle(num):
@@ -95,7 +96,7 @@ print("Min Y Value = " + str(min_y))
 #------------------------------------------------------------- #
 
 vehicle.armed = True  # Arming Vehicle
-vehicle.channels.overrides[3]= 1040 # --- Throttle
+#vehicle.channels.overrides[3]= 1040 # --- Throttle
 
 #------------------------------------------------------------- #
 
@@ -108,14 +109,19 @@ sf = 1.5
 #key = keyboard pressed
 def takeoff(key):
     global flag_2
+    vehicle.armed = True
     if not flag:
-        if key == Key.up and vehicle.channels.overrides[3] < 2000:
-            vehicle.channels.overrides[3] += amt
+        if key == Key.up: #and vehicle.channels.overrides[3] < 2000:
+            #vehicle.channels.overrides[3] += amt
 	    #print('Up = '+ str(vehicle.channels.overrides[3]))
+	    channel_list[2] += amt
+	    ppm.update_channels(channel_list)
 
-        elif key == Key.down and vehicle.channels.overrides[3] > 1040:
-	    vehicle.channels.overrides[3] -= amt
+        elif key == Key.down: #and vehicle.channels.overrides[3] > 1040:
+	    #vehicle.channels.overrides[3] -= amt
 	    #print('Down = ' + str(vehicle.channels.overrides[3]))
+	    channel_list[2] -= amt
+	    ppm.update_channels(channel_list)
 
 	elif key == Key.shift:
 	    flag_2 = True
@@ -126,7 +132,8 @@ def takeoff(key):
 	    print('flag 2 false')
 
         elif key == Key.esc:
-	    vehicle.channels.overrides[3] = 1000
+	    #vehicle.channels.overrides[3] = 1000
+	    channel_list[2] = 1000
 
 # ----------------------------------------------------------- #
 
@@ -145,24 +152,33 @@ def stable_pos(Gx, Gy):
 #Gx - current(real time) X rotation gyro value
 #Gy - current(real time) Y rotation gyro value
 def stabilize(Gx, Gy):
-    i = 8
+    i = 1
+    global channel_list
     if not flag_2:
 	#Left motion
         if Gx > max_x + sf: #and 1000 <= vehicle.channels.overrides[1] <= 2000:
-	    vehicle.channels.overrides[1] -= i
-	    vehicle.channels.overrides[2] -= i
+	    #vehicle.channels.overrides[1] -= i
+	    #vehicle.channels.overrides[2] -= i
+	    channel_list[0] -= i 
+	    ppm.update_channels(channel_list)
 	#Right motion
-        elif Gx < min_x - sf: #and 1000 <= vehicle.channels.overrides[1] <= 2000:
-	    vehicle.channels.overrides[1] += i
-	    vehicle.channels.overrides[2] += i
+        if Gx < min_x - sf: #and 1000 <= vehicle.channels.overrides[1] <= 2000:
+	    #ehicle.channels.overrides[1] += i
+	    #vehicle.channels.overrides[2] += i
+	    channel_list[0] += i
+	    ppm.update_channels(channel_list)
 	#Backward Motion
         if Gy > max_y + sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
-	    vehicle.channels.overrides[2] += i
-	    vehicle.channels.overrides[1] -= i
+	    #vehicle.channels.overrides[2] += i
+	    #vehicle.channels.overrides[1] -= i
+	    channel_list[1] -= i
+	    ppm.update_channels(channel_list)
 	#Forward Motion
-        elif Gy < min_y - sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
-	    vehicle.channels.overrides[2] -= i
-	    vehicle.channels.overrides[1] += i
+        if Gy < min_y - sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
+	    #vehicle.channels.overrides[2] -= i
+	    #vehicle.channels.overrides[1] += i
+	    channel_list[1] += i
+	    ppm.update_channels(channel_list)
 	'''
 	if Gz > max_z + sf: #and 1000 <= vehicle.channels.overrides[2] <= 2000:
 	    vehicle.channels.overrides[4] -= i
@@ -187,7 +203,7 @@ def gyro():
         if stable_pos(new_roll, new_pitch):
 	    flag = False
 	    #print('True')
-	elif 1030 < vehicle.channels.overrides[3] < 2000:
+	else: #1030 < vehicle.channels.overrides[3] < 2000:
 	    flag = True
 	    stabilize(new_roll, new_pitch)
 	    #list_channel_1.append(vehicle.channels.overrides[1])
@@ -196,9 +212,115 @@ def gyro():
     	time.sleep(0.3)
 
 # ----------------------------------------------------------- #
+class X:
+
+    GAP = 400
+    WAVES = 3
+
+    def __init__(self, pi, gpio, channels=8, frame_ms=27):
+        self.pi = pi
+        self.gpio = gpio
+
+        if frame_ms < 5:
+            frame_ms = 5
+            channels = 2
+        elif frame_ms > 100:
+
+            frame_ms = 100
+
+        self.frame_ms = frame_ms
+
+        self._frame_us = int(frame_ms * 1000)
+        self._frame_secs = frame_ms / 1000.0
+
+        if channels < 1:
+            channels = 1
+        elif channels > (frame_ms // 2):
+            channels = int(frame_ms // 2)
+
+        self.channels = channels
+
+        self._widths = [1000] * channels  # set each channel to minimum pulse width
+
+        self._wid = [None] * self.WAVES
+        self._next_wid = 0
+
+        pi.write(gpio, pigpio.LOW)
+
+        self._update_time = time.time()
+
+    def _update(self):
+        wf = []
+        micros = 0
+        for i in self._widths:
+            wf.append(pigpio.pulse(0, 1 << self.gpio, self.GAP))
+            wf.append(pigpio.pulse(1 << self.gpio, 0, i))
+            micros += (i + self.GAP)
+        # off for the remaining frame period
+        wf.append(pigpio.pulse(1 << self.gpio,0, self._frame_us - micros))
+
+        self.pi.wave_add_generic(wf)
+        wid = self.pi.wave_create()
+        self.pi.wave_send_using_mode(wid, pigpio.WAVE_MODE_REPEAT_SYNC)
+        self._wid[self._next_wid] = wid
+
+        self._next_wid += 1
+        if self._next_wid >= self.WAVES:
+            self._next_wid = 0
+
+        remaining = self._update_time + self._frame_secs - time.time()
+        if remaining > 0:
+            time.sleep(remaining)
+        self._update_time = time.time()
+
+        wid = self._wid[self._next_wid]
+        if wid is not None:
+            self.pi.wave_delete(wid)
+            self._wid[self._next_wid] = None
+
+    def update_channel(self, channel, width):
+        self._widths[channel] = width
+        self._update()
+
+    def update_channels(self, widths):
+        self._widths[0:len(widths)] = widths[0:self.channels]
+	for i in range(len(widths)):
+	    self._widths[i] -= 400
+        self._update()
+
+    def cancel(self):
+        self.pi.wave_tx_stop()
+        for i in self._wid:
+            if i is not None:
+                self.pi.wave_delete(i)
+#------------------------------------------------------------- #
 
 if __name__ == '__main__':
 
+    import time 
+    import pigpio
+    
+    pi = pigpio.pi()
+    
+    pi.wave_tx_stop()  # Start with a clean slate.
+    ppm = X(pi, 6, frame_ms=20)
+    updates = 0
+    
+    ch_1 = 1500
+    ch_2 = 1500
+    ch_3 = 1000
+    ch_4 = 1500
+    ch_5 = 1000
+    ch_6 = 1000
+    ch_7 = 1000
+    ch_8 = 1000
+
+    channel_list = [ch_1, ch_2, ch_3, ch_4, ch_5, ch_6, ch_7, ch_8]
+   
+    ppm.update_channels(channel_list)
+
+    vehicle.armed = True
+ 
     t1 = threading.Thread(target = gyro)
     t2 = threading.Thread(target = takeoff(readchar.readkey()))
 
@@ -209,3 +331,9 @@ if __name__ == '__main__':
     t2.start()
     lis.start()
     lis.join()
+    
+    time.sleep(2)
+
+    ppm.cancel()
+
+    pi.stop()
