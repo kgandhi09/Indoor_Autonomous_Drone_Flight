@@ -13,6 +13,11 @@ import readchar
 import pickle
 import pigpio
 
+# pass argumemts while runnimg the code 
+# to run the code - 
+# 1. sudo pigpiod (only one time for each boot)
+# 2. python simple_takeoff_v2.py --connect /dev/ttyS0
+
 parser = argparse.ArgumentParser(
     description='Example showing how to set and clear vehicle channel-override information.')
 parser.add_argument('--connect',
@@ -26,8 +31,6 @@ parser.add_argument('--aircraft',
                     
 args = parser.parse_args()
 
-    
-
 
 connection_string = args.connect
 
@@ -35,11 +38,6 @@ print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, baud=921600,  wait_ready=False)
 
 vehicle.armed = True
-
-#vehicle.channels.overrides[3] = 1040 # --- Thhrottle
-#vehicle.channels.overrides[2] = 1499 # --- Pitch
-#vehicle.channels.overrides[1] = 1502 # --- Roll
-#vehicle.channels.overrides[4] = 1500
 
 def angle(num):
     return num*60
@@ -77,11 +75,11 @@ while True:
     if count1 > 60:
 	break
 
-max_x = max(list_x)  #-- maximum gyro value on x axis in degrees
-min_x = min(list_x)  #-- minimum gyro value on x axis in degrees
+max_x = max(list_x)  #-- maximum gyro value on x axis in degrees to be in stable condition
+min_x = min(list_x)  #-- minimum gyro value on x axis in degrees to be in stable condition
 
-max_y = max(list_y)  #-- maximum gyro value on y axis in degrees
-min_y = min(list_y)  #-- minimum gyro value on y axis in degrees
+max_y = max(list_y)  #-- maximum gyro value on y axis in degrees to be in stable condition
+min_y = min(list_y)  #-- minimum gyro value on y axis in degrees to be in stable condition
 
 #max_z = max(list_z)
 #min_z = min(list_z)
@@ -147,7 +145,7 @@ def stable_pos(Gx, Gy):
 	result = True
     return result
 
-# Counter valu es if drone is not in stable position
+# Counter valuses if drone is not in stable position
 #param, Gx, Gy
 #Gx - current(real time) X rotation gyro value
 #Gy - current(real time) Y rotation gyro value
@@ -155,6 +153,7 @@ def stabilize(Gx, Gy):
     i = 1
     global channel_list
     if not flag_2:
+        # below are the unstable conditions
 	#Left motion
         if Gx > max_x + sf: #and 1000 <= vehicle.channels.overrides[1] <= 2000:
 	    #vehicle.channels.overrides[1] -= i
@@ -306,16 +305,16 @@ if __name__ == '__main__':
     ppm = X(pi, 6, frame_ms=20)
     updates = 0
     
-    ch_1 = 1500
-    ch_2 = 1500
-    ch_3 = 1000
+    ch_1 = 1500 # pitch
+    ch_2 = 1500 # roll
+    ch_3 = 1000 # throttle
     ch_4 = 1500
     ch_5 = 1000
     ch_6 = 1000
     ch_7 = 1000
     ch_8 = 1000
 
-    channel_list = [ch_1, ch_2, ch_3, ch_4, ch_5, ch_6, ch_7, ch_8]
+    channel_list = [ch_1, ch_2, ch_3, ch_4, ch_5, ch_6, ch_7, ch_8]  # ppm signal list
    
     ppm.update_channels(channel_list)
 

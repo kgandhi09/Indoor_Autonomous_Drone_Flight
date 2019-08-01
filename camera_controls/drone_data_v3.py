@@ -9,14 +9,18 @@ import readchar
 from pynput.keyboard import Key, Controller, Listener
 import threading
 import json
+import pickle
 
-host = '192.168.0.101'
-port = 9988
+host = '192.168.0.101' # ip of raspberry pi
+port = 9988 
 
+
+# inittiates socket connection
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((host, port))
 
-
+# function for formating bytes type data to list from incoming socket communication
+# Not used currently, instead using json loads and dump for formatting
 def format(byte):
     str = byte.decode('utf-8')
     str = str.translate({ord('['): None})
@@ -35,15 +39,15 @@ def format(byte):
 
 print("\nGyro Values!")
 
-reply = s.recv(1024)
+reply = s.recv(1024) # receives initial gyro values for reference
 
 gyro_list = json.loads(reply)
 
-
-min_x = gyro_list[0]
-max_x = gyro_list[1]
-min_y = gyro_list[2]
-max_y = gyro_list[3]
+# Gyro values for reference received initially from drone through socket
+min_x = gyro_list[0]  #-- maximum gyro value on x axis in degrees to be in stable condition
+max_x = gyro_list[1]  #-- minimum gyro value on x axis in degrees to be in stable condition
+min_y = gyro_list[2]  #-- maximum gyro value on y axis in degrees to be in stable condition
+max_y = gyro_list[3]  #-- minimum gyro value on y axis in degrees to be in stable condition
 
 print('\n'+"Max X Value = " + str(max_x))
 print("Min X Value = " + str(min_x))
@@ -51,55 +55,61 @@ print("Min X Value = " + str(min_x))
 print('\n'+"Max Y Value = " + str(max_y))
 print("Min Y Value = " + str(min_y))
 
-ch_1 = 1500
-ch_2 = 1500
-ch_3 = 1000
-ch_4 = 1500
+ch_1 = 1500   # pitch (Y Axis)
+ch_2 = 1500   # roll  (X Axis)
+ch_3 = 1000   # Throttle (Z Axis)
+ch_4 = 1500   # Yaw (Orientation)
 ch_5 = 1500
 ch_6 = 1500
 ch_7 = 1500
 ch_8 = 1500
 
-ppm_signals = [ch_1, ch_2, ch_3, ch_4, ch_5, ch_6, ch_7, ch_8]
+ppm_signals = [ch_1, ch_2, ch_3, ch_4, ch_5, ch_6, ch_7, ch_8]  # init ppm signal list
+stable_ppm_signals = [ch_1, ch_2, ch_3, ch_4, ch_5, ch_6, ch_7, ch_8]
+
 print(ppm_signals)
 
 gyro_flag = False
 takeoff_flag = False
 
-sf = 10
+sf = 2 # +/- error for gyro stabilization
 
-
+# Takeoff by incrementing and decrementing throttle value by 10 units by up and down key arrow press.
+# param, key
+# key = keyboard pressed
 def takeoff(key):
-    
+    global stable_ppm_signals
     global gyro_flag
+    global ppm_signals
     amt = 10
 
+    # increases throttle value by amt(10)
     if key == Key.up:
         ppm_signals[2] += amt
         #print('Up')
         if gyro_flag:
             reply = str(ppm_signals).encode('utf-8')
             s.send(reply)
+    # decreases throttle value by amt(10)
     elif key == Key.down:
         ppm_signals[2] -= amt
         #print('Down')
         if gyro_flag:
             reply = str(ppm_signals).encode('utf-8')
             s.send(reply)
-
-    elif key == Key.tab:
-        gyro_flag = True
-        #print('Pos_Hold')
-
+    # pressing shift will stop auto gyro stabilization and throttle up-down
     elif key == Key.shift:
         gyro_flag = True
-        lis.stop()
-        #print('Pos_Hold')
+        stable_ppm_signals = ppm_signals.copy()
+        #lis.stop()
 
     elif key == Key.esc:
-        ppm_signals[2] = 1000
+        stable_ppm_signals[2] = 1000
 
-
+# defines the position condition in which drone is stable
+# param, Gx, Gy
+# Gx - current(real time) X rotation gyro value
+# Gy - current(real time) Y rotation gyro value
 def stable_pos(Gx, Gy):
     result = False
     global sf
@@ -107,10 +117,16 @@ def stable_pos(Gx, Gy):
         result = True
     return result
 
+# Auto stabilization function
+# Counter values if drone is not in stable position
+# param, Gx, Gy
+# Gx - current(real time) X rotation gyro value
+# Gy - current(real time) Y rotation gyro value
 def stabilize(Gx, Gy):
     i = 1
     global channel_list
 
+# Below listed are the unstable conditions in four directions
     #Left motion
     if Gx > max_x + sf: 
         ppm_signals[0] -= i
@@ -128,10 +144,9 @@ def stabilize(Gx, Gy):
         ppm_signals[1] += i
 	    
 	
-
+# continuously receives gyro values and sends ppm changes to the drone
 # If throttle in stable condition - continue throttle value
 # If throttle not in stable condition - stabilize and again continue throttle if stabilize true
-
 def gyro():
 
     global ppm_signals
@@ -214,6 +229,7 @@ count = 0
 
 reached = False
 
+# mouse click event
 def mouse_drawing(event, x, y, flags, params):
     global count
     global circles
@@ -223,7 +239,12 @@ def mouse_drawing(event, x, y, flags, params):
         circles.append((x, y))
         count += 1
 
-def change(list):
+# changes the drone ppm signals according to the latest left mouse click
+# assign new coordinates to the drone (new x and new y where the mouse is clicked)
+# If new x and new y different from current x and y, then changes ppm signals and sends to drone via socket
+# Else sends stable ppm signals to the drone via socket
+def change():
+    global stable_ppm_signals
     global state
     global curr_coord_x,curr_coord_y
     global new_coord_x, new_coord_y
@@ -233,31 +254,38 @@ def change(list):
     if new_coord_x > curr_coord_x and (not state):
         #print('1')
         ppm_signals[0] += 1 #Roll
+        #ppm_signals[0] = stable_ppm_signals[0] + 30
         print('on the way!')
+        s.send(str(ppm_signals).encode('utf-8'))
     if new_coord_x  < curr_coord_x and (not state):
         #print('2')
         ppm_signals[0] -= 1 #Roll
+        #ppm_signals[0] = stable_ppm_signals[0] - 30
         print('on the way!')
+        s.send(str(ppm_signals).encode('utf-8'))
     if new_coord_y > curr_coord_y and (not state):
         #print('3')   
         ppm_signals[1] -= 1 #Pitch
+        #ppm_signals[1] = stable_ppm_signals[1] - 30
         print('on the way!')
+        s.send(str(ppm_signals).encode('utf-8'))
     if new_coord_y < curr_coord_y and (not state):
         #print('4')
         ppm_signals[1] += 1 #Pitch
+        #ppm_signals[1] = stable_ppm_signals[1] + 30
         print('on the way!')
+        s.send(str(ppm_signals).encode('utf-8'))
     
     
-    elif state: 
+    if state: 
         print('reached')
-        ppm_signals[0] = 1500
-        ppm_signals[1] = 1500
+        s.send(str(stable_ppm_signals).encode('utf-8'))
 
-    return list
-
+# Detects and draws around the marker attached to the drone
+# Calculates current coordinates and compares with new coordinates(mouse click)
+# Changes ppm signals according to new mouse click coordinates by calling change()
 def cam_detection():
     global ppm_signals
-
     global state
     global count
     global oX,oY
@@ -278,7 +306,7 @@ def cam_detection():
     font = cv2.FONT_HERSHEY_COMPLEX
     
     cv2.namedWindow("Frame")
-    #cv2.setMouseCallback("Frame", mouse_drawing)
+    cv2.setMouseCallback("Frame", mouse_drawing)
     
     
 
@@ -286,7 +314,7 @@ def cam_detection():
 
         ret,frame = cap.read()
         cv2.setMouseCallback("Frame", mouse_drawing)
-        cv2.imshow("Frame", frame)
+        
     
         if gyro_flag:
             cv2.circle(frame, (320, 240), 30, (0,0,255), 2)
@@ -299,20 +327,17 @@ def cam_detection():
             current_time= int(round(time.time()*1000))
             
             if(current_time-last_time>50):
-                
-                #print(cap.read())
-                
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
                 #### Step 1############
 
                 #defining the Range of orange color
-                orange_lower=np.array([ 0, 89, 255],np.uint8)
-                orange_upper=np.array([86, 192, 255],np.uint8)
+                orange_lower=np.array([29, 64, 255],np.uint8)
+                orange_upper=np.array([68, 149, 255],np.uint8)
 
                 #defining the Range of Sky Blue color
-                sb_lower=np.array([88, 58, 198],np.uint8)
-                sb_upper=np.array([137, 140, 255],np.uint8)
+                sb_lower=np.array([91, 97, 190],np.uint8)
+                sb_upper=np.array([147, 255, 255],np.uint8)
 
                 ####### Step 2#############
 
@@ -403,18 +428,18 @@ def cam_detection():
                 last_time=current_time
 
             #cv2.putText(frame, str(count), (new_coord_x, new_coord_y), cv2.FONT_HERSHEY_SIMPLEX,0.5,(0,0,0),1)    
-
+            
             cv2.imshow("Frame", frame)
             key = cv2.waitKey(1)
             if key == 27:
                 break
             elif key == ord("d"):
                 circles = []
-
+            
             state = new_coord_x - 25 < curr_coord_x < new_coord_x + 25 and new_coord_y - 25 < curr_coord_y < new_coord_y + 25
-        
-            change(ppm_signals)
-            s.send(str(ppm_signals).encode('utf-8'))
+
+            change()
+            #s.send(str(ppm_signals).encode('utf-8'))
 #---------------------------------------------------------------------------------------------- #
 
 if __name__ == '__main__':

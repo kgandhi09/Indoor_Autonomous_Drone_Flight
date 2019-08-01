@@ -1,3 +1,4 @@
+
 from __future__ import print_function
 import zbar
 from PIL import Image, ImageColor
@@ -11,37 +12,10 @@ import sys, os
 from optparse import OptionParser
 import argparse
 
-parser = argparse.ArgumentParser(
-    description='Example showing how to set and clear vehicle channel-override information.')
-parser.add_argument('--connect',
-                    help="vehicle connection target string. If not specified, SITL automatically started and used.")
-args = parser.parse_args()
-
-connection_string = args.connect
-sitl = None
-
-print('Connecting to vehicle on: %s' % connection_string)
-vehicle = connect(connection_string, wait_ready=True)
-
-print("Arming motors")
-vehicle.armed = True
-time.sleep(0.5)
-
 cap = cv2.VideoCapture(0)
 
-scanner = zbar.ImageScanner()
-scanner.parse_config('enable')
-
-vehicle.channels.overrides[3] = 1200
-time.sleep(2)
-vehicle.channels.overrides[3] = 1300
-time.sleep(2)
-vehicle.channels.overrides[3] = 1400
-time.sleep(2)
-vehicle.channels.overrides[3] = 1500
-time.sleep(2)
-
-vehicle.channels.overrides[1] = 1500
+#scanner = zbar.ImageScanner()
+#scanner.parse_config('enable')
 
 while True:
 
