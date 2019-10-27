@@ -40,8 +40,6 @@ Indoor Autonomous Drone Flight
     • type : ‘sudo mavproxy.py --master=/dev/ttyS0 --baudrate 921600 --aircraft MyCopter’
     • it should show some messages including ‘Initializing APM’ and others as well.
     • If it shows link 1 down, there might be some issues with connections or other steps mentioned above.
-			
- 
                   
 
 
@@ -54,79 +52,10 @@ Indoor Autonomous Drone Flight
         ◦ Any GPIO pin would go in signal pin of pixhawk’s rc receiver input (should be changed in code acc to connection).
         ◦ Ground pin from rpi to ground pin of pixhawk’s rc receiver input. 
 
-FIRST ATTEMPT:
 
-First strategy was clearly to add keyboard controls to the drone using rc channels overrides via mavlink protocol. This code did not include any gyro stabilization and supplying ppm signals to drone. Entire idea was to control roll, pitch, yaw and throttle using keyboard controls.
+This startegy consists of using cameras and creating custom coordinate systems for getting current coordinates of drone using color detection and putting marker on the drone. This attempt also includes use of self-stabilzation using pixhawk's internal gyro.
 
-Channels overrides	
-    • Channels overrides is an inbuilt function provided in dronekit which controls single channel’s pwm value.
-    • Under Dronekit module in python class heirarchy is as follows:
-        ◦ Dronekit>Vehicle>channels
-        ◦ Inside this class override functions is used which takes in an element ranging from [1,2,3....8]. These elements are channel numbers.
-        ◦ Object can be defined as vehicle.channels.overrides[3] = 1500 #Eamle
-            ▪ Here channel 3 is set to 1500 which means 50% throttle.
-      
-              
-
-    • Inside Autonomous_Drone_Flight > keyboard_controls_without_gyro&ppm 
-        ◦ keyboard_controls_v1.py, keyboard_controls_v2.py, keyboard_controls_v3.py uses same method of using channels overrides as main source of controlling drone. 
-      
-      Conclusion: So to say, this method was not efficient at all as mavlink protocol took too much time when key was pressed and channel values were updated too late. Drone did not takeoff at all by this method.
-
-SECOND ATTEMPT:
-
-After keyboard controls, decided to use of gyro for self balancing instead of keyboard keys. Only throttle value was controlled by keyboard.
-
-    • Hardware:
-      
-
-    • Use of external gyro:
-        ◦ Connected external mpu6050 gyro as there was no access to pixhawk’s internal gyro.
-        ◦ External gyro was not giving proper and stable values. Fluctuations sometimes ranged from -40 deg to + 40 deg even in stable condition.
-        ◦ In Autonomous_Drone_Flight > gyro_stable.py external gyro is used with vehicle channel overrides. 
-        ◦ Neither gyro values were good nor channel values were.  
-
-Conclusion: Drone did not takeoff at all. Gyro values were very unstable and mavlink protocol form of communication took too long to update channel values. Decided to somehow access pixhawk’s internal gyro which had built-in Extended Kalman Filter.
-
-THIRD ATTEMPT:
-
-Third strategy was clearly not to use any external gyro and any other hardware. In this attempt, got the access of pixhawk’s internal gyro.
-
-    • Pixhawk’s Internal Gyro accesss:
-        ◦ internal gyro can be accessed though dronekit python module under attitude class.
-        ◦ Class heirarchy is as follow:
-            ▪ Dronekit > Vehicle > attitude 
-        ◦ Object can be defined as ‘pitch = vehicle.attitude.pitch’ and ‘roll = vehicle.attitude.roll’
-            ▪ vehicle being dronekit object
-        ◦ inbuilt gyro values ranges from (-1 to +1). -1 being actual -60 degrees and +1 being actual +60 degrees.
-          
-    • This code flow used mavlink protocol to read gyro values from internal gyro and mavlink protocol for vehicle channel overrides.
-        ◦ In Autonomous_Drone_Flight > simple_takeoff_v1.py internal gyro is used with vehicle channel overrides.
-
-Conclusion: This method provided best results for gyro values using mavlink, but as before mavlink took too lnog to update channel values. Vehicle took off, was pretty much stable but not as desired. To take the drone to its best performance, decided to use mavlink protocol for sensing part,  but use ppm signals for controls part. This is where ppm connection betweeen rpi and pixhawk comes into action.
-
-FOURTH ATTEMPT:
-
-In this attempt, code used same logic to implement self-stabilization as we used before with external gyro, but for the controls part, instead of using mavlink for channel overrides we supplied ppm increment/decrement for self-stabilization.
-
-    • Use of internal gyro is showed in the previous attempt
-    • In Autonomous_Drone_Flight > simple_takeoff_v2.py internal gyro is used with ppm signals.
-
-Conclusion: This gave the best performance so far and we were ready to move ahead with the navigation part.
-
-FIFTH ATTEMPT:
-
-Found version of pixhawk of firmware which supported Marvel Mind and can be used as Indoor GPS with pixhawk.
-
-There were some issues which created interferences between telemetry and marvel mind as both were being operated on same frequency 440 mHZ. 
-
-Conclusion : Drone did not read proper GPS values, lag in reading values. So decided to use cameras for navigation part.
-
-SIXTH ATTEMPT:
-
-This startegy consisted of using cameras and creating custom coordinate systems for getting current coordinates of drone using color detection and putting marker on the drone. This attempt also included use of previous method of self-stabilzation.
-
-This method consists of two machines for communication and navigation of drone. Every math and computation is run on ground station whereas drone only sends gyro values and receives ppm signals after computation happens on ground station.
+This method consists of two machines for communication and navigation of drone. Every math and computation is run on ground station whereas drone only sends gyro values and receives ppm signals before and after computation happens respectively on ground station.
 
 Drone:
     • Drone initially takes the reference of ground which is indicated by ‘storing gyro values for reference!’  in the code. 
@@ -150,4 +79,4 @@ Autonomous_Drone_Flight > camera_controls > drone_data_v3.py is the final code.
 
 Conclusion: It has given the best stabilization performance till now. For making throttle autonomous ultrosonic sensor will be required. For the navigation part more debugging and study of drone’s behaviour is rquired.
 
-# --------------------------------------------- Author : Kushal Gandhi ------------------------------------------------------------------------------------------------------------#
+# ---------------------------- Author : Kushal Gandhi ------------------------ #
