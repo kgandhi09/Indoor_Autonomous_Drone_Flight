@@ -79,4 +79,4 @@ Autonomous_Drone_Flight > camera_controls > drone_data_v3.py is the final code.
 
 Conclusion: It has given the best stabilization performance till now. For making throttle autonomous ultrosonic sensor will be required. For the navigation part more debugging and study of drone’s behaviour is rquired.
 
-# ----------------- Author : Kushal Gandhi ---------------- #
+#                  Author : Kushal Gandhi                #
