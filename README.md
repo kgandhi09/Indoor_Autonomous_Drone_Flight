@@ -68,5 +68,5 @@ Three main aspects of ground station are camera_detection(), change(), gyro()
 Conclusion: It has given the best stabilization performance till now. For making throttle autonomous ultrosonic sensor will be required. For the navigation part more debugging and study of drone’s behaviour is rquired.
 
 ## Link to the Demo:
-https://www.youtube.com/watch?v=sulP17Brtiw
+https://www.youtube.com/watch?v=shfXqi58m1o
 
