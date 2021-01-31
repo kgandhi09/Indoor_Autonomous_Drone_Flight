@@ -1,10 +1,6 @@
 # Indoor Autonomous Drone Flight #
 
->> This method utilizes the serial communication between raspberry pi and Pixhawk. 
-
->> To avoid the problem of GPS in an indoor environment this code uses channel
- overrides method and manipulates the PWM values of corresponding Channel.
-
+Since, the drone has to be used in indoor environments and for applications such as warehouse management, it doesn't have access to GPS signals and thus, waypoint navigation system using MissionPlanner and self-stabilzation mode cannot be used. This method utilizes serial communication between RaspberryPi and Pixhawk 2 to generate and manipulate PWM signals for stabilization and navigation. Program has self-stabilization feature that uses Pixhwak's inetrnal gyro data. Has a two way tcp socket communication between drone and ground station. Ground station uses an overhead camera and a computer vision algorithm to detect and localize the drones through colored markers attached on the top of the drone.
 
 ## Serial Communication between raspberry pi and Pixhawk
 ### Establishing serial communication between pi and pixhawk
